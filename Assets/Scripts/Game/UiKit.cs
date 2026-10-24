@@ -74,6 +74,14 @@ namespace Noted.Game
             return button;
         }
 
+        /// <summary>Gives on-screen text a dark outline so it stays readable over bright props.</summary>
+        public static void AddOutline(Text t)
+        {
+            var o = t.gameObject.AddComponent<Outline>();
+            o.effectColor = new Color(0.03f, 0.05f, 0.06f, 0.95f);
+            o.effectDistance = new Vector2(2f, -2f);
+        }
+
         public static Text ButtonText(Button b)
         {
             return b.GetComponentInChildren<Text>();

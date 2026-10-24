@@ -21,6 +21,11 @@ namespace Noted.Game
         /// <summary>Test hook: when true, E counts as held even with no key down (used when keyboard devices are disabled in the background).</summary>
         public bool SimulateInteractHeld { get; set; }
 
+        /// <summary>Test hook: makes the next zero-hold interaction fire as if E had just been pressed.</summary>
+        public void SimulatePress() { simulatedPress = true; }
+
+        bool simulatedPress;
+
         public float RangeBonus { get; set; }
         public bool HasTarget { get; private set; }
         public string Prompt { get; private set; }
@@ -69,6 +74,7 @@ namespace Noted.Game
 
             if (target == null || !target.TryGetPrompt(out var prompt, out var hold))
             {
+                simulatedPress = false;
                 HasTarget = false;
                 Prompt = null;
                 Progress01 = 0f;
@@ -89,7 +95,11 @@ namespace Noted.Game
             if (hold <= 0f)
             {
                 Progress01 = 0f;
-                if (interact.WasPressedThisFrame()) target.Complete();
+                if (interact.WasPressedThisFrame() || simulatedPress)
+                {
+                    simulatedPress = false;
+                    target.Complete();
+                }
                 return;
             }
 

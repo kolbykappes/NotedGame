@@ -235,6 +235,30 @@ namespace Noted.Game
             SetControls(true);
         }
 
+        // ---- The tool locker in the quiet time (no need to sleep) ----
+
+        public void OpenLocker()
+        {
+            if (Phase != FlowPhase.Quiet) return;
+            returnPhase = FlowPhase.Quiet;
+            Phase = FlowPhase.Shop;
+            SetControls(false);
+            hud.SetPrompt(false, "", 0f);
+            shop.Show(Session, CloseLocker, () =>
+            {
+                Beep(SfxId.Buy);
+                ApplyModifiers();
+                RefreshHud();
+            }, "Close");
+        }
+
+        void CloseLocker()
+        {
+            Phase = returnPhase;
+            SetControls(true);
+            RefreshHud();
+        }
+
         // ---- Night ----
 
         public void Sleep()

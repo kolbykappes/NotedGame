@@ -73,10 +73,13 @@ namespace Noted.Game
 
             carryText = UiKit.Label(r, "Carry", "", 24, UiKit.Yellow, TextAnchor.MiddleCenter,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-300, 90), new Vector2(300, 122));
+            UiKit.AddOutline(carryText);
+            UiKit.AddOutline(promptText);
 
             // Toast (upper middle)
             toastText = UiKit.Label(r, "Toast", "", 34, UiKit.Cream, TextAnchor.MiddleCenter,
                 new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-600, -190), new Vector2(600, -110));
+            UiKit.AddOutline(toastText);
         }
 
         public void SetVisible(bool visible)

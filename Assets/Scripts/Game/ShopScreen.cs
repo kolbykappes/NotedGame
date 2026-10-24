@@ -78,8 +78,9 @@ namespace Noted.Game
             if (root != null) root.SetActive(false);
         }
 
-        public void Show(GameSession s, Action wake, Action purchased)
+        public void Show(GameSession s, Action wake, Action purchased, string closeLabel = "Wake Up")
         {
+            UiKit.ButtonText(wakeButton).text = closeLabel;
             session = s;
             onWake = wake;
             onPurchased = purchased;

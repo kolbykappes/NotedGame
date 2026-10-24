@@ -27,3 +27,11 @@ in the kit instead (a new numbered rule, or a cold-tier note). Annotate correcti
 
 ## Scratch scripts (tools/, not part of the game)
 `tools/build_greybox.cs` (the first test room), `tools/capture_views.cs` (eye-level captures of the Facility scene), `tools/probe.cs` (one-line state report in Play Mode), `tools/play_helpers.ps1` and `tools/play_full.ps1` (drive the running game from PowerShell: probe, simulate keys, snapshot, play several days). Output goes to `tools/out/` (ignored by git).
+
+## More verified traps (2026-10-24, afternoon)
+- **Play Mode with the Editor in the background:** frames freeze unless `set_autotick` *and* `Application.runInBackground = true` are both on; prove it with `wait_for` on `Time.frameCount`; restore `runInBackground` before stopping. Full write-up and recipe: `Docs/research/unity-cli-play-and-frames.md`.
+- **Capture the real Game view with `capture_game_view`** (source screen, includes overlay UI); it writes under `Assets/` (the path must not contain `..`), so copy the PNG out and delete `Assets/Screenshots`. `screenshot` captures the camera only.
+- **Keyboard and mouse devices are disabled while the Editor is in the background**, so simulated key and pointer events are dropped. Drive the game through its own methods; `Interactor.SimulateInteractHeld` and `SimulatePress()` exist for tests. Do not use `IgnoreFocus` (it would feed the owner's real typing to the game).
+- **`FindObjectsByType` with a sort-mode argument is obsolete here**; use the single-argument overloads in eval code.
+- **Python `re.sub` replacement strings interpret `\n`** as a newline; building C# source with it produced a broken string literal. Use `str.replace` or escape the backslash.
+- **A Play session can leave the open scene dirty** (for example the lighting fade); run `unity-ops.sh save` before scripted scene work, then rebuild.

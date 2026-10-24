@@ -46,6 +46,7 @@ namespace Noted.EditorTools
 
         static Font font;
         static Transform rGeometry, rProps, rStations, rLights, rSigns, rSystems, rHall, rCeiling;
+        static LockerInteractable lockerInteractable;
         static readonly List<TaskStation> stations = new List<TaskStation>();
         static readonly List<Light> officeLights = new List<Light>();
 
@@ -126,6 +127,7 @@ namespace Noted.EditorTools
             // Wire stations and interactables to the flow.
             foreach (var s in stations) Set(s, "flow", flow);
             Set(cot, "flow", flow);
+            Set(lockerInteractable, "flow", flow);
             Set(terminal, "flow", flow);
 
             Set(flow, "motor", motor);
@@ -276,9 +278,10 @@ namespace Noted.EditorTools
             Sign(rSigns, "SignSlogan", "Comfort Is Our Output", new Vector3(-29.6f, 2.62f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Sign(rSigns, "SignAdminDoor", "ADMINISTRATION", new Vector3(-26.7f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Box(rProps, "AdminRug", new Vector3(-25f, 0.01f, 8f), new Vector3(5f, 0.02f, 3f), mNavy, false);
-            Box(rProps, "ToolLocker", new Vector3(-29.5f, 1.0f, 6.4f), new Vector3(0.6f, 2.0f, 1.8f), mDoor);
+            var locker = Box(rProps, "ToolLocker", new Vector3(-29.5f, 1.0f, 6.4f), new Vector3(0.6f, 2.0f, 1.8f), mDoor);
+            lockerInteractable = locker.AddComponent<LockerInteractable>();
             Sign(rSigns, "SignLocker", "TOOL LOCKER", new Vector3(-29.18f, 1.9f, 5.7f), -90f, 0.045f, 40, Yellow, TextAnchor.UpperLeft);
-            Sign(rSigns, "SignLockerHint", "Open at night", new Vector3(-29.18f, 1.6f, 5.7f), -90f, 0.035f, 36, Cream, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignLockerHint", "Open any time after work", new Vector3(-29.18f, 1.6f, 5.7f), -90f, 0.035f, 36, Cream, TextAnchor.UpperLeft);
 
             wake = new GameObject("WakePoint").transform;
             wake.SetParent(rSystems, false);
