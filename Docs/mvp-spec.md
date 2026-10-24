@@ -1,5 +1,7 @@
 # MVP spec: the core loop
 
+> **Status 2026-10-24 (late night): the loop below is built and verified in Play Mode with simulated input. See `Docs/playtest-guide.md` for what was built, what is unverified, and the tuning knobs. Differences from this spec: the shredder moved to the far utility room; a global `TaskHoldScale` of 1.5 lengthens every hold; complaining pauses the clock; uncollected coins are banked when you sleep; placeholder sounds were added; the upgrade list is the longer one proposed above.**
+
 *Decided with the owner 2026-10-24. Focus: the mechanics of the core loop. "Discover things" and story are layered on later. Everything here is a placeholder unless marked decided.*
 
 ## Organization (decided 2026-10-24)

@@ -12,3 +12,18 @@ in the kit instead (a new numbered rule, or a cold-tier note). Annotate correcti
 ## Triage of the kit's cold-tier notes against this project
 
 - For each `.claude/unity-kit/reference/unity-*.md` entry tagged `[IF ...]`, say whether it applies now, could apply, or not yet.
+
+## More verified traps (2026-10-24, building the MVP)
+
+- **Editor-side timeout for eval.** `unity command eval ... -- --timeout 120000` (the fence) raises the Editor's 5 s main-thread budget; without it a scene builder reports a timeout even though it finished. Always inspect state after a timeout (rule 26).
+- **Play Mode frames did advance** in this session (Editor window visible): frame counts rose by about 300 per second, so simulated-input tests work without `isPaused` or any focus tricks. Check frame counts before and after (rule 2.1). `editor_stop` is only for sessions you started (rule 25); scripts recompile after leaving Play Mode.
+- **Simulated keyboard works, simulated mouse does not.** `InputSystem.QueueStateEvent` on `Keyboard.current` drives the real actions (hold E, Space, Enter). A simulated mouse is ignored by the UI module because the editor setting `PointersAndKeyboardsRespectGameViewFocus` needs the pointer physically over the Game view. Test UI with the raycaster and `ExecuteEvents` (proves the handlers) and ask a human for real clicks.
+- **Child `localScale` inherits the parent's scale.** A "world size" given to a child of a scaled cube comes out multiplied. The builder now divides by the parent's lossy scale (`SetWorldScale`).
+- **Legacy `TextMesh` with the built-in font ignores depth** (signs show through walls) and a custom shader gets no font atlas. Signs are World Space canvases with a uGUI `Text` instead.
+- **`FindFirstObjectByType` is obsolete** in this Unity (use `FindAnyObjectByType`). In eval strings, C# strings need double quotes; single quotes are char literals.
+- **A debug helper that ticks the clock to zero swallows the one-time "expired" signal.** Debug hooks that skip time must call the same transition the real timer does (`DebugExpireClock` now starts the pull directly).
+- **Pillow ignores embedded colour profiles** by default; convert with `ImageCms` before sampling colours.
+- Reflection into private fields (for example setting `PlayerLook.pitch`) is fine in throwaway test scripts, but nothing in the game relies on it.
+
+## Scratch scripts (tools/, not part of the game)
+`tools/build_greybox.cs` (the first test room), `tools/capture_views.cs` (eye-level captures of the Facility scene), `tools/probe.cs` (one-line state report in Play Mode), `tools/play_helpers.ps1` and `tools/play_full.ps1` (drive the running game from PowerShell: probe, simulate keys, snapshot, play several days). Output goes to `tools/out/` (ignored by git).
