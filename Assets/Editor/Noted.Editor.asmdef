@@ -1,0 +1,21 @@
+{
+    "name": "Noted.Editor",
+    "rootNamespace": "Noted.EditorTools",
+    "references": [
+        "Noted.Core",
+        "Noted.Game",
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

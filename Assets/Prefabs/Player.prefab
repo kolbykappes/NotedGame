@@ -42,8 +42,8 @@ Camera:
   m_GameObject: {fileID: 3394999720587567895}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.05, g: 0.07, b: 0.08, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -65,7 +65,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.05
-  far clip plane: 1000
+  far clip plane: 120
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -104,6 +104,7 @@ GameObject:
   - component: {fileID: 8150084676562135655}
   - component: {fileID: 9200904278527084622}
   - component: {fileID: 8903771936056546401}
+  - component: {fileID: 149256166396889236}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -190,3 +191,18 @@ MonoBehaviour:
   stickDegreesPerSecond: 180
   invertY: 0
   pitchLimit: 85
+--- !u!114 &149256166396889236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8750433674876744032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3776782bd23706a458960f34aca00165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Noted.Game::Noted.Game.Interactor
+  actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  playerCamera: {fileID: 4395422492169868644}
+  baseRange: 2.6

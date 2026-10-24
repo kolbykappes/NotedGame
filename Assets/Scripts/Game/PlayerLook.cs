@@ -32,6 +32,13 @@ namespace Noted.Game
         public float MouseSensitivity { get => mouseSensitivity; set => mouseSensitivity = value; }
         public bool InvertY { get => invertY; set => invertY = value; }
 
+        /// <summary>Levels the camera, for use after a teleport.</summary>
+        public void ResetPitch()
+        {
+            pitch = 0f;
+            if (playerCamera != null) playerCamera.transform.localRotation = Quaternion.identity;
+        }
+
         void OnEnable()
         {
             var map = actions.FindActionMap("Player", true);

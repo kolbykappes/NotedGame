@@ -37,6 +37,20 @@ namespace Noted.Game
         public bool AlwaysSprint { get => alwaysSprint; set => alwaysSprint = value; }
         public Vector3 PlanarVelocity => planarVelocity;
 
+        /// <summary>Scales walk and sprint speed (Running Shoes, rank perks).</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>Moves the body without the controller fighting the change, and stops all motion.</summary>
+        public void TeleportTo(Vector3 position, float yawDegrees)
+        {
+            if (controller == null) controller = GetComponent<CharacterController>();
+            controller.enabled = false;
+            transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yawDegrees, 0f));
+            controller.enabled = true;
+            planarVelocity = Vector3.zero;
+            verticalVelocity = 0f;
+        }
+
         void Awake()
         {
             controller = GetComponent<CharacterController>();
@@ -62,7 +76,7 @@ namespace Noted.Game
 
             Vector2 input = Vector2.ClampMagnitude(move.ReadValue<Vector2>(), 1f);
             bool sprinting = sprint.IsPressed() != alwaysSprint;
-            float speed = sprinting ? sprintSpeed : walkSpeed;
+            float speed = (sprinting ? sprintSpeed : walkSpeed) * SpeedMultiplier;
 
             // Desired velocity in world space from the body's yaw.
             Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
