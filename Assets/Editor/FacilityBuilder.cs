@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Noted.Core;
 using Noted.Game;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -42,12 +43,14 @@ namespace Noted.EditorTools
 
         // Materials
         static Material mWall, mFloor, mCeiling, mCream, mBeige, mDark, mNavy, mDoor, mRack, mRackLight, mPurpleGlow, mScreen,
-            mActive, mCoin, mLanyardGrey, mLanyardBlue, mPlant, mWood, mMarker, mRed, mVending;
+            mActive, mCoin, mLanyardGrey, mLanyardBlue, mPlant, mWood, mMarker, mRed, mVending,
+            mLedOpen, mPaper, mPlugRed, mPlugBlue, mPlugGreen, mPlugYellow;
 
         static Font font;
         static Transform rGeometry, rProps, rStations, rLights, rSigns, rSystems, rHall, rCeiling;
         static LockerInteractable lockerInteractable;
         static readonly List<TaskStation> stations = new List<TaskStation>();
+        static readonly List<AreaDoor> doors = new List<AreaDoor>();
         static readonly List<Light> officeLights = new List<Light>();
 
         public static string Build()
@@ -56,6 +59,7 @@ namespace Noted.EditorTools
             if (System.Type.GetType("Noted.Game.GameFlow, Noted.Game") == null) return "error: Noted.Game is not compiled";
 
             stations.Clear();
+            doors.Clear();
             officeLights.Clear();
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
@@ -122,7 +126,7 @@ namespace Noted.EditorTools
             Set(pull, "sfx", sfx);
 
             // UI
-            var canvas = BuildCanvas(out var hud, out var cards, out var complaint, out var shop, out var setup);
+            var canvas = BuildCanvas(out var hud, out var cards, out var complaint, out var shop, out var setup, out var miniGame);
 
             // Wire stations and interactables to the flow.
             foreach (var s in stations) Set(s, "flow", flow);
@@ -143,6 +147,8 @@ namespace Noted.EditorTools
             Set(flow, "lighting", lighting);
             Set(flow, "pull", pull);
             Set(flow, "sfx", sfx);
+            Set(flow, "miniGame", miniGame);
+            SetArray(flow, "doors", doors.ToArray());
             Set(flow, "wakePoint", wake);
             Set(flow, "consoleStandPoint", stand);
 
@@ -187,10 +193,40 @@ namespace Noted.EditorTools
             Frame("WindowFrame1", new Vector3(-16.5f, 1.65f, z), 5f, 1.5f);
             Frame("WindowFrame2", new Vector3(13f, 1.65f, z), 5f, 1.5f);
 
-            // Locked door: a slab with a purple slit and a red lock light, set into the corridor side.
-            var door = Box(rGeometry, "LockedDoor", new Vector3(-4f, DoorH / 2, z), new Vector3(1.9f, DoorH, 0.12f), mDoor);
-            Box(door.transform, "DoorSlit", new Vector3(-4f, 1.55f, z + 0.07f), new Vector3(0.18f, 0.7f, 0.04f), mPurpleGlow, false);
-            Box(door.transform, "LockLight", new Vector3(-3.2f, 1.2f, z + 0.07f), new Vector3(0.1f, 0.1f, 0.04f), mRed, false);
+            // Badge-locked doors. Each opens when its area is unlocked (see Noted.Core.AreaCatalog).
+            var hallDoor = MakeDoor(AreaIds.Hall, new Vector3(-4f, 0f, z), 1.9f, +1, "KEYCARD\nREQUIRED");
+            Box(hallDoor.transform, "DoorSlit", new Vector3(-4f, 1.55f, z + 0.07f), new Vector3(0.18f, 0.7f, 0.04f), mPurpleGlow, false);
+            MakeDoor(AreaIds.Print, new Vector3(0f, 0f, 2f), 2.3f, -1, "ACCESS\nPENDING");
+            MakeDoor(AreaIds.Office, new Vector3(14f, 0f, 2f), 2.3f, -1, "ACCESS\nPENDING");
+            MakeDoor(AreaIds.Utility, new Vector3(25f, 0f, 2f), 2.3f, -1, "ACCESS\nPENDING");
+        }
+
+        // A badge-locked door slab in a wall gap. viewerSide is +1 when the people who read it stand at higher z than the wall, -1 when lower.
+        static GameObject MakeDoor(string areaId, Vector3 wallCenter, float width, int viewerSide, string closedText)
+        {
+            var slab = Box(rGeometry, "Door_" + areaId, new Vector3(wallCenter.x, DoorH / 2f, wallCenter.z), new Vector3(width, DoorH, 0.12f), mDoor);
+            float faceZ = wallCenter.z + viewerSide * (T / 2f + 0.02f);
+            float yaw = viewerSide > 0 ? 180f : 0f;
+
+            // The sign starts at the reader's left edge: -x when facing +z (yaw 0), +x when facing -z (yaw 180).
+            float signX = viewerSide > 0 ? wallCenter.x + width / 2f - 0.15f : wallCenter.x - width / 2f + 0.15f;
+            var sign = Sign(slab.transform, "Sign", closedText, new Vector3(signX, 2.1f, faceZ), yaw, 0.04f, 40, Cream, TextAnchor.UpperLeft);
+
+            float ledX = viewerSide > 0 ? wallCenter.x - width / 2f + 0.2f : wallCenter.x + width / 2f - 0.2f;
+            var led = Box(slab.transform, "Led", new Vector3(ledX, 1.25f, faceZ), new Vector3(0.14f, 0.14f, 0.05f), mRed, false);
+
+            var door = slab.AddComponent<AreaDoor>();
+            Set(door, "areaId", areaId);
+            Set(door, "slab", slab.transform);
+            Set(door, "slabCollider", slab.GetComponent<Collider>());
+            Set(door, "led", led.GetComponent<Renderer>());
+            Set(door, "ledClosed", mRed);
+            Set(door, "ledOpen", mLedOpen);
+            Set(door, "sign", sign);
+            Set(door, "closedText", closedText);
+            Set(door, "openText", "ACCESS\nGRANTED");
+            doors.Add(door);
+            return slab;
         }
 
         struct Opening
@@ -283,6 +319,20 @@ namespace Noted.EditorTools
             Sign(rSigns, "SignLocker", "TOOL LOCKER", new Vector3(-29.18f, 1.9f, 5.7f), -90f, 0.045f, 40, Yellow, TextAnchor.UpperLeft);
             Sign(rSigns, "SignLockerHint", "Open any time after work", new Vector3(-29.18f, 1.6f, 5.7f), -90f, 0.035f, 36, Cream, TextAnchor.UpperLeft);
 
+            // Supply cabinet (coffee beans), paper stack, mail table and a breaker box: the admin room's jobs.
+            Station("BeanSack", "bean_sack", new Vector3(-28.0f, 0.6f, 13.3f), new Vector3(1.0f, 1.2f, 0.7f), mWood);
+            Sign(rSigns, "SignBeans", "COFFEE BEANS", new Vector3(-28.6f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("PaperStack", "paper_stack", new Vector3(-22.4f, 0.5f, 13.3f), new Vector3(0.9f, 1.0f, 0.7f), mCream);
+            Sign(rSigns, "SignPaper", "PAPER", new Vector3(-22.8f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("MailTable", "mail_table", new Vector3(-22.4f, 0.45f, 10.6f), new Vector3(1.4f, 0.9f, 0.8f), mCream);
+            for (int i = 0; i < 3; i++)
+            {
+                Box(rProps, "Envelope" + i, new Vector3(-22.9f + i * 0.4f, 0.93f, 10.6f), new Vector3(0.3f, 0.03f, 0.2f), mPaper, false);
+            }
+            Sign(rSigns, "SignMail", "MAIL", new Vector3(-20.12f, 1.7f, 11.6f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("BreakerAdmin", "breaker_admin", new Vector3(-29.82f, 1.4f, 9.0f), new Vector3(0.14f, 0.7f, 0.5f), mNavy);
+            Sign(rSigns, "SignBreakerAdmin", "BREAKER", new Vector3(-29.72f, 2.05f, 8.7f), -90f, 0.04f, 40, Yellow, TextAnchor.UpperLeft);
+
             wake = new GameObject("WakePoint").transform;
             wake.SetParent(rSystems, false);
             wake.position = new Vector3(-26.6f, 0.05f, 10.6f);
@@ -304,6 +354,9 @@ namespace Noted.EditorTools
             // Supply shelf (filters).
             Station("SupplyShelf", "filter_shelf", new Vector3(-19.6f, 1.0f, 11f), new Vector3(0.6f, 2.0f, 2.4f), mWood);
             Sign(rSigns, "SignSupplies", "SUPPLIES", new Vector3(-19.82f, 2.5f, 10.4f), -90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+
+            Station("BreakerBreak", "breaker_break", new Vector3(-17.0f, 1.4f, 13.82f), new Vector3(0.5f, 0.7f, 0.14f), mNavy);
+            Sign(rSigns, "SignBreakerBreak", "BREAKER", new Vector3(-17.3f, 2.1f, 13.88f), 0f, 0.04f, 40, Yellow, TextAnchor.UpperLeft);
 
             // Table, chairs, vending machine, plant.
             Box(rProps, "BreakTable", new Vector3(-14f, 0.4f, 8f), new Vector3(2.4f, 0.8f, 1.2f), mWood);
@@ -330,8 +383,6 @@ namespace Noted.EditorTools
             Box(rProps, "ClipboardDesk", new Vector3(18.2f, 0.45f, 13.3f), new Vector3(2.2f, 0.9f, 0.9f), mWood);
             Station("Clipboard", "clipboard", new Vector3(18.2f, 0.98f, 13.2f), new Vector3(0.5f, 0.12f, 0.65f), mCream);
             Sign(rSigns, "SignClipboard", "LOG BOOK", new Vector3(17.6f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
-            Station("PaperStack", "paper_stack", new Vector3(9.4f, 0.5f, 13.2f), new Vector3(0.9f, 1.0f, 0.7f), mCream);
-            Sign(rSigns, "SignPaper", "PAPER", new Vector3(9.0f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             for (int i = 0; i < 3; i++)
             {
                 Box(rProps, "OfficeDesk" + i, new Vector3(11f + i * 3f, 0.4f, 7f), new Vector3(1.8f, 0.8f, 0.9f), mWood);
@@ -344,16 +395,33 @@ namespace Noted.EditorTools
         {
             Sign(rSigns, "SignUtility", "UTILITY", new Vector3(23.4f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Box(rProps, "Boiler", new Vector3(24.5f, 1.1f, 6.5f), new Vector3(2f, 2.2f, 2f), mDark);
-            Station("BeanSack", "bean_sack", new Vector3(21.2f, 0.35f, 13.3f), new Vector3(0.8f, 0.7f, 0.6f), mWood);
-            Sign(rSigns, "SignBeans", "COFFEE BEANS", new Vector3(20.5f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Station("Dumpster", "dumpster", new Vector3(28.4f, 0.7f, 12.7f), new Vector3(1.8f, 1.4f, 1.2f), mDark);
             Sign(rSigns, "SignDumpster", "DUMPSTER", new Vector3(27.7f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
-            Box(rProps, "Crates", new Vector3(23f, 0.4f, 12.4f), new Vector3(1.6f, 0.8f, 1.2f), mWood);
+            Box(rProps, "Crates", new Vector3(28.2f, 0.4f, 6f), new Vector3(1.6f, 0.8f, 1.2f), mWood);
+
+            // The network closet: a walled corner of the utility room with its own badge door and a patch panel.
+            WallAlongX("ClosetSouth", 8.5f, 20.1f, 25.5f, new[] { 22.3f }, 1.6f, DoorH);
+            Box(rGeometry, "ClosetEast", new Vector3(25.5f, H / 2, 11.25f), new Vector3(T, H, 5.5f), mWall);
+            MakeDoor(AreaIds.Closet, new Vector3(22.3f, 0f, 8.5f), 1.5f, -1, "ACCESS\nPENDING");
+            Sign(rSigns, "SignCloset", "NETWORK CLOSET", new Vector3(20.5f, 2.9f, 8.38f), 0f, 0.05f, 40, Cream, TextAnchor.UpperLeft);
+            Station("PatchPanel", "patch_panel", new Vector3(22.7f, 1.4f, 13.82f), new Vector3(1.8f, 1.2f, 0.16f), mDark);
+            var plugs = new[] { mPlugRed, mPlugBlue, mPlugGreen, mPlugYellow };
+            for (int i = 0; i < 4; i++)
+            {
+                Box(rProps, "Plug" + i, new Vector3(22.15f + i * 0.35f, 1.4f, 13.72f), new Vector3(0.2f, 0.2f, 0.08f), plugs[i], false);
+            }
+            PointLight("ClosetLight", new Vector3(23f, 2.7f, 11.5f), new Color(0.8f, 0.9f, 1f), 1.4f, 6f);
             Box(rProps, "MopBucket", new Vector3(22.2f, 0.25f, 4f), new Vector3(0.5f, 0.5f, 0.5f), mDark);
 
             // The vent at the far east end of the corridor.
             var vent = Station("Vent", "vent", new Vector3(29.8f, 1.5f, 0f), new Vector3(0.2f, 1.1f, 1.5f), mDark);
             Sign(rSigns, "SignVent", "VENT 7", new Vector3(29.86f, 2.45f, 0.45f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+
+            // A breaker box on the corridor's north wall and the badge reader's power box on the south wall.
+            Station("BreakerCorridor", "breaker_corridor", new Vector3(-6.0f, 1.4f, 1.83f), new Vector3(0.5f, 0.7f, 0.14f), mNavy);
+            Sign(rSigns, "SignBreakerCorridor", "BREAKER", new Vector3(-6.3f, 2.15f, 1.84f), 0f, 0.04f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("ReaderPower", "reader_power", new Vector3(-9.0f, 1.4f, -1.83f), new Vector3(0.5f, 0.5f, 0.14f), mNavy);
+            Sign(rSigns, "SignReader", "BADGE READER POWER", new Vector3(-8.5f, 1.95f, -1.78f), 180f, 0.04f, 40, Yellow, TextAnchor.UpperLeft);
 
             // Thermostat on the corridor's south wall, beside the east window.
             Station("Thermostat", "thermostat", new Vector3(8.7f, 1.4f, -1.88f), new Vector3(0.3f, 0.4f, 0.12f), mCream);
@@ -367,6 +435,20 @@ namespace Noted.EditorTools
 
         static void BuildServerHall()
         {
+            // The walkable strip along the corridor wall, behind the keycard door: spare drives, the alarm panel, and one lit rack.
+            Station("SparesCabinet", "spares_cabinet", new Vector3(-8.2f, 1.0f, -2.55f), new Vector3(1.4f, 2.0f, 0.7f), mWood);
+            Sign(rSigns, "SignSpares", "SPARE DRIVES", new Vector3(-8.9f, 2.3f, -2.93f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("AlarmPanel", "alarm_panel", new Vector3(3.0f, 1.5f, -2.17f), new Vector3(1.2f, 0.9f, 0.12f), mDark);
+            var pads = new[] { mPlugRed, mPlugBlue, mPlugGreen, mPlugYellow };
+            for (int i = 0; i < 4; i++)
+            {
+                Box(rProps, "AlarmPad" + i, new Vector3(2.55f + i * 0.3f, 1.5f, -2.25f), new Vector3(0.22f, 0.22f, 0.05f), pads[i], false);
+            }
+            Station("AlarmReset", "alarm_reset", new Vector3(4.6f, 1.3f, -2.17f), new Vector3(0.3f, 0.5f, 0.12f), mNavy);
+            Sign(rSigns, "SignAlarm", "ALARM PANEL", new Vector3(2.4f, 2.25f, -2.3f), 0f, 0.045f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("RackDrive", "rack_drive", new Vector3(6.0f, 1.3f, -4.6f), new Vector3(0.8f, 0.5f, 0.12f), mRack);
+            Sign(rSigns, "SignRack", "RACK 14", new Vector3(5.6f, 2.05f, -4.58f), 0f, 0.045f, 40, Yellow, TextAnchor.UpperLeft);
+
             // Rows of dark racks visible through the windows; the hall cannot be entered.
             int index = 0;
             foreach (float z in new[] { -5.2f, -8.4f, -11.6f })
@@ -405,6 +487,8 @@ namespace Noted.EditorTools
             PointLight("HallPurpleWest", new Vector3(-14f, 2.6f, -7f), Purple, 5f, 16f);
             PointLight("HallPurpleEast", new Vector3(14f, 2.6f, -7f), Purple, 5f, 16f);
             PointLight("DoorGlow", new Vector3(-4f, 1.8f, -1.2f), Purple, 2.5f, 5f);
+            PointLight("HallWorkLightA", new Vector3(-6f, 2.8f, -3.3f), new Color(1f, 0.9f, 0.75f), 1.6f, 9f);
+            PointLight("HallWorkLightB", new Vector3(6f, 2.8f, -3.3f), new Color(1f, 0.9f, 0.75f), 1.6f, 9f);
             PointLight("TerminalLamp", new Vector3(-21.8f, 2.2f, 7f), new Color(0.85f, 1f, 0.97f), 4.5f, 7f);
         }
 
@@ -499,7 +583,7 @@ namespace Noted.EditorTools
             return go;
         }
 
-        static Canvas BuildCanvas(out Hud hud, out CardScreen cards, out ComplaintScreen complaint, out ShopScreen shop, out SetupScreen setup)
+        static Canvas BuildCanvas(out Hud hud, out CardScreen cards, out ComplaintScreen complaint, out ShopScreen shop, out SetupScreen setup, out MiniGameScreen miniGame)
         {
             var uiRoot = new GameObject("UI");
             var canvasGo = new GameObject("Canvas", typeof(RectTransform));
@@ -515,6 +599,8 @@ namespace Noted.EditorTools
 
             hud = NewScreen<Hud>(canvasGo.transform, "HudComponent");
             hud.Build(canvasGo.transform);
+            miniGame = NewScreen<MiniGameScreen>(canvasGo.transform, "MiniGameScreenComponent");
+            miniGame.Build(canvasGo.transform);
             cards = NewScreen<CardScreen>(canvasGo.transform, "CardScreenComponent");
             cards.Build(canvasGo.transform);
             complaint = NewScreen<ComplaintScreen>(canvasGo.transform, "ComplaintScreenComponent");
@@ -673,6 +759,12 @@ namespace Noted.EditorTools
             mMarker = Mat("Noted_Marker", Yellow, new Color(0.9f, 0.7f, 0.2f));
             mRed = Mat("Noted_RedLight", C(0x90, 0x20, 0x20), new Color(0.9f, 0.1f, 0.1f));
             mVending = Mat("Noted_Vending", C(0x2D, 0x5E, 0x5B));
+            mLedOpen = Mat("Noted_LedOpen", C(0x20, 0x90, 0x40), new Color(0.1f, 0.9f, 0.3f));
+            mPaper = Mat("Noted_Paper", C(0xE6, 0xE2, 0xDA));
+            mPlugRed = Mat("Noted_PlugRed", C(0xC8, 0x3A, 0x32));
+            mPlugBlue = Mat("Noted_PlugBlue", C(0x2F, 0x6F, 0xC8));
+            mPlugGreen = Mat("Noted_PlugGreen", C(0x35, 0x9A, 0x4A));
+            mPlugYellow = Mat("Noted_PlugYellow", C(0xD8, 0xB8, 0x30));
         }
 
         static Material Mat(string name, Color color, Color? emission = null)

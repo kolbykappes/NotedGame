@@ -1,8 +1,9 @@
+using Noted.Core;
 using UnityEngine;
 
 namespace Noted.Game
 {
-    /// <summary>A place where a task step happens (the coffee machine, the printer, the vent and so on).</summary>
+    /// <summary>A place where a job step happens: a pick-up, a delivery, a switch, a reading, or a mini-game.</summary>
     public class TaskStation : Interactable
     {
         [SerializeField] string stationId;
@@ -32,8 +33,25 @@ namespace Noted.Game
 
             if (session.TryGetAvailableStep(stationId, out _, out var step))
             {
-                holdSeconds = step.HoldSeconds * session.Config.TaskHoldScale * session.Mods.HoldMultiplier;
-                prompt = "Hold E: " + step.Prompt;
+                switch (step.Kind)
+                {
+                    case StepKind.Hold:
+                        holdSeconds = step.HoldSeconds * session.Config.TaskHoldScale * session.Mods.HoldMultiplier;
+                        prompt = "Hold E: " + step.Prompt;
+                        break;
+                    default:
+                        // A switch or a mini-game: one press.
+                        holdSeconds = 0f;
+                        prompt = "Press E: " + step.Prompt;
+                        break;
+                }
+                return true;
+            }
+
+            if (session.IsWaitingAt(stationId, out float left))
+            {
+                blocked = true;
+                prompt = "Wait " + Mathf.CeilToInt(left) + " s, then come back to switch it on.";
                 return true;
             }
 
@@ -48,7 +66,7 @@ namespace Noted.Game
 
         public override void Complete()
         {
-            flow.CompleteStationStep(this);
+            flow.ActivateStation(this);
         }
 
         void Update()

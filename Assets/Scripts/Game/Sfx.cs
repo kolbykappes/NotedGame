@@ -15,6 +15,9 @@ namespace Noted.Game
         Reply,
         Wake,
         Sleep,
+        Flip,
+        Wrong,
+        Unlock,
     }
 
     /// <summary>
@@ -48,6 +51,9 @@ namespace Noted.Game
             clips[SfxId.Reply] = Tone("reply", 0.22f, new[] { 520f, 440f }, 0.4f, 9f);
             clips[SfxId.Wake] = Chord("wake", 0.6f, new[] { 330f, 440f, 554f }, 0.35f, 5f);
             clips[SfxId.Sleep] = Tone("sleep", 0.8f, new[] { 330f, 196f }, 0.45f, 3f);
+            clips[SfxId.Flip] = Tone("flip", 0.06f, new[] { 300f, 180f }, 0.6f, 45f);
+            clips[SfxId.Wrong] = Tone("wrong", 0.22f, new[] { 160f, 110f }, 0.55f, 9f);
+            clips[SfxId.Unlock] = Chord("unlock", 0.7f, new[] { 392f, 494f, 587f, 784f }, 0.4f, 5f);
 
             hum = gameObject.AddComponent<AudioSource>();
             hum.clip = HumClip();

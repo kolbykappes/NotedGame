@@ -77,8 +77,8 @@ namespace Noted.Game
             UiKit.AddOutline(promptText);
 
             // Toast (upper middle)
-            toastText = UiKit.Label(r, "Toast", "", 34, UiKit.Cream, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-600, -190), new Vector2(600, -110));
+            toastText = UiKit.Label(r, "Toast", "", 30, UiKit.Cream, TextAnchor.UpperCenter,
+                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-640, -300), new Vector2(640, -104));
             UiKit.AddOutline(toastText);
         }
 

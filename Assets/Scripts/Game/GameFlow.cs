@@ -17,6 +17,7 @@ namespace Noted.Game
         Complaint,
         RankUp,
         Shop,
+        MiniGame,
     }
 
     /// <summary>
@@ -41,6 +42,8 @@ namespace Noted.Game
         [SerializeField] LightingController lighting;
         [SerializeField] PullSequence pull;
         [SerializeField] Sfx sfx;
+        [SerializeField] MiniGameScreen miniGame;
+        [SerializeField] AreaDoor[] doors;
 
         [Header("Places")]
         [SerializeField] Transform wakePoint;
@@ -73,6 +76,7 @@ namespace Noted.Game
 
             pull.ResetState();
             lighting.SetMode(LightMode.Day, true);
+            SyncDoors(true);
             SetControls(false);
             hud.SetVisible(false);
             motor.TeleportTo(wakePoint.position, wakePoint.eulerAngles.y);
@@ -93,12 +97,13 @@ namespace Noted.Game
         {
             if (Session == null) return;
 
-            if (Phase == FlowPhase.Day)
+            if (Phase == FlowPhase.Day || Phase == FlowPhase.MiniGame)
             {
                 hud.SetTimer(Session.Clock.Remaining);
                 if (Session.Tick(Time.deltaTime))
                 {
                     hud.SetTimer(0f);
+                    if (Phase == FlowPhase.MiniGame) miniGame.ForceClose();
                     BeginPull();
                     return;
                 }
@@ -179,29 +184,110 @@ namespace Noted.Game
             Phase = FlowPhase.Quiet;
             SetControls(true);
             RefreshHud();
-            hud.Toast("Day " + lastSummary.Day + " complete. Tasks finished: " + lastSummary.TasksCompleted + "/" + lastSummary.TasksOnList +
-                      ". Collect your Uptime, file a complaint, or sleep at the cot.", 7f);
+            string summary = "Day " + lastSummary.Day + " complete. Tasks finished: " + lastSummary.TasksCompleted + "/" + lastSummary.TasksOnList +
+                             ". Collect your Uptime, file a complaint, or sleep at the cot.";
+            hud.Toast(summary, 7f);
+            HandleUnlocks(lastSummary.NewlyUnlocked, summary);
         }
 
         // ---- Station and coin callbacks ----
+
+        /// <summary>The player finished the hold or the press at a station. A mini-game step opens its game first.</summary>
+        public void ActivateStation(TaskStation station)
+        {
+            if (Phase != FlowPhase.Day) return;
+            if (!Session.TryGetAvailableStep(station.StationId, out var task, out var step)) return;
+
+            if (step.Kind == StepKind.MiniGame)
+            {
+                OpenMiniGame(station, step);
+                return;
+            }
+            CompleteStationStep(station);
+        }
+
+        void OpenMiniGame(TaskStation station, TaskStep step)
+        {
+            Phase = FlowPhase.MiniGame;
+            SetControls(false);
+            hud.SetPrompt(false, "", 0f);
+            int seed = Session.Day * 1009 + Mathf.Abs(station.StationId.Length * 31 + Session.Rank.CompletedTasks);
+            miniGame.Open(step.Game, seed, Session.CurrentRank, step.Prompt,
+                () =>
+                {
+                    Phase = FlowPhase.Day;
+                    SetControls(true);
+                    CompleteStationStep(station);
+                },
+                () =>
+                {
+                    Phase = FlowPhase.Day;
+                    SetControls(true);
+                },
+                () =>
+                {
+                    Session.ApplyTimePenalty(MiniGameRules.WrongAnswerPenaltySeconds);
+                    Beep(SfxId.Wrong);
+                });
+        }
 
         public void CompleteStationStep(TaskStation station)
         {
             var result = Session.CompleteStep(station.StationId);
             if (!result.Accepted) return;
 
+            string line;
             if (result.TaskDone)
             {
                 coins.Spawn(station.CoinOrigin, result.CoinsToSpawn, Session.Config.CoinPickupsPerTask);
-                hud.Toast("Done: " + result.Task.Definition.Name, 2.5f);
+                line = "Done: " + result.Task.Definition.Name;
                 Beep(SfxId.TaskDone);
+            }
+            else if (result.Step != null && result.Step.Kind == StepKind.Flip)
+            {
+                line = result.Task.CurrentStep != null ? "Done. Next: " + result.Task.CurrentStep.Prompt : "Done.";
+                Beep(SfxId.Flip);
             }
             else
             {
-                hud.Toast("Step done. " + (result.Task.CurrentStep != null ? "Next: " + result.Task.CurrentStep.Prompt : ""), 3f);
+                line = "Step done. " + (result.Task.CurrentStep != null ? "Next: " + result.Task.CurrentStep.Prompt : "");
                 Beep(SfxId.StepDone);
             }
+
+            // A reading and a small oddity can ride along with the result.
+            float seconds = 3f;
+            if (!string.IsNullOrEmpty(result.Readout)) { line += "\nReading: " + result.Readout; seconds = 4f; }
+            if (!string.IsNullOrEmpty(result.Oddity)) { line += "\n" + result.Oddity; seconds = 7f; }
+            hud.Toast(line, seconds);
+
             RefreshHud();
+            HandleUnlocks(result.Unlocked, null);
+        }
+
+        // ---- Rooms that open as you work ----
+
+        void SyncDoors(bool instant)
+        {
+            if (doors == null) return;
+            foreach (var d in doors)
+            {
+                if (d != null) d.SetOpen(Session.IsAreaUnlocked(d.AreaId), instant);
+            }
+        }
+
+        void HandleUnlocks(IReadOnlyList<string> opened, string toastPrefix)
+        {
+            if (opened == null || opened.Count == 0) return;
+            SyncDoors(false);
+            var names = new List<string>();
+            foreach (var id in opened)
+            {
+                var rule = Session.Areas.Find(id);
+                names.Add(rule != null ? rule.Name : id);
+            }
+            string message = "Access granted: " + string.Join(", ", names) + ".";
+            hud.Toast(string.IsNullOrEmpty(toastPrefix) ? message : toastPrefix + "\n" + message, 7f);
+            Beep(SfxId.Unlock);
         }
 
         public void CollectCoin(CoinPickup coin)
@@ -249,6 +335,7 @@ namespace Noted.Game
                 Beep(SfxId.Buy);
                 ApplyModifiers();
                 RefreshHud();
+                HandleUnlocks(Session.RefreshUnlocks(), null);
             }, "Close");
         }
 
@@ -292,6 +379,7 @@ namespace Noted.Game
                 Beep(SfxId.Buy);
                 ApplyModifiers();
                 RefreshHud();
+                HandleUnlocks(Session.RefreshUnlocks(), null);
             });
         }
 
@@ -352,12 +440,20 @@ namespace Noted.Game
                 case "paper": return "ream of paper";
                 case "bag": return "shred bag";
                 case "filter": return "air filter";
+                case "drive": return "spare drive";
                 case "reading": return "temperature reading";
                 default: return token;
             }
         }
 
         // ---- Debug helpers, used by verification scripts ----
+
+        /// <summary>Opens every room (verification scripts only).</summary>
+        public void DebugUnlockAll()
+        {
+            Session.ForceUnlockAll();
+            SyncDoors(false);
+        }
 
         /// <summary>Runs the clock out and starts the pull now, as if the timer had reached zero.</summary>
         public void DebugExpireClock()

@@ -28,6 +28,13 @@ namespace Noted.Core
             return false;
         }
 
+        /// <summary>Takes time off the clock (a wrong answer in a mini-game). It never reaches zero here: the next Tick does that, so the day-ending tick still fires.</summary>
+        public void Penalty(float seconds)
+        {
+            if (Expired) return;
+            Remaining = Math.Max(0.001f, Remaining - Math.Max(0f, seconds));
+        }
+
         /// <summary>Adds time (for example Tidy Habits). A clock that has already run out stays out.</summary>
         public void AddSeconds(float seconds)
         {

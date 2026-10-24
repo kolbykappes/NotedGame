@@ -64,6 +64,8 @@ namespace Noted.Core
         CoinMagnet,
         Automation,
         CarryCapacity,
+        /// <summary>A tool that opens a door or enables a job rather than changing a number.</summary>
+        AccessTool,
         /// <summary>A tool for jobs that do not exist yet. Shown locked in the locker; has no effect.</summary>
         FutureTool,
     }
@@ -145,6 +147,10 @@ namespace Noted.Core
                 new UpgradeDefinition("longer_day", "Overtime Slip", "+15 seconds on the clock.", UpgradeKind.LongerDay, 40, 1.6f, 3),
                 new UpgradeDefinition("tidy_habits", "Label Maker", "Each finished task adds 3 seconds to the clock.", UpgradeKind.TidyHabits, 70, 1f, 1),
 
+                // Specialist tools: each opens something. The keycard opens the server hall; the strap unlocks drive jobs there.
+                new UpgradeDefinition("staff_keycard", "Staff Keycard", "Opens the server hall door.", UpgradeKind.AccessTool, 80, 1f, 1, null, UpgradeCategory.Tools, 2),
+                new UpgradeDefinition("anti_static_strap", "Anti-Static Strap", "Needed before touching server hardware. Adds drive jobs.", UpgradeKind.AccessTool, 70, 1f, 1, null, UpgradeCategory.Tools, 2),
+
                 // Service contracts: the building does one task for you every day (pays coins, does not count toward rank).
                 new UpgradeDefinition("auto_coffee", "Coffee Subscription", "Coffee is restocked for you every day.", UpgradeKind.Automation, 90, 1f, 1, "coffee", UpgradeCategory.Contracts),
                 new UpgradeDefinition("auto_printer", "Printer Service Contract", "The printer is loaded for you every day.", UpgradeKind.Automation, 100, 1f, 1, "printer", UpgradeCategory.Contracts),
@@ -152,8 +158,7 @@ namespace Noted.Core
 
                 // Tools for jobs deeper in the building. Listed so the player can see what is coming; not buyable yet.
                 new UpgradeDefinition("flashlight", "Flashlight", "For dark corridors and cable trays.", UpgradeKind.FutureTool, 60, 1f, 1, null, UpgradeCategory.Later, 1, false),
-                new UpgradeDefinition("staff_keycard", "Staff Keycard", "Opens staff-only doors.", UpgradeKind.FutureTool, 80, 1f, 1, null, UpgradeCategory.Later, 1, false),
-                new UpgradeDefinition("anti_static_strap", "Anti-Static Strap", "Required before touching server hardware.", UpgradeKind.FutureTool, 70, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                
                 new UpgradeDefinition("cable_tester", "Cable Tester", "Finds the one bad cable in a hundred.", UpgradeKind.FutureTool, 90, 1f, 1, null, UpgradeCategory.Later, 2, false),
                 new UpgradeDefinition("crash_cart", "Crash Cart", "Carry five things at once.", UpgradeKind.FutureTool, 140, 1f, 1, null, UpgradeCategory.Later, 2, false),
                 new UpgradeDefinition("step_ladder", "Step Ladder", "For high shelves and ceiling panels.", UpgradeKind.FutureTool, 90, 1f, 1, null, UpgradeCategory.Later, 2, false),

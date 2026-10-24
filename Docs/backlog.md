@@ -3,6 +3,7 @@
 One line per item: status, item, notes.
 
 ## Needs a human (next playtest)
+- [ ] Play the new jobs with a real keyboard and mouse: the three mini-games (keys and clicks), the door unlocks, the reader wait-and-return, the strap and keycard purchases. Judge whether early days feel mundane but not boring, and whether 11 jobs and the unlock order feel right.
 - [ ] Play `Facility` start to finish with a real mouse and speakers. Feel, pacing, sound, text legibility. See `Docs/playtest-guide.md`.
 - [ ] Click the UI with a real mouse (setup buttons, intro button, a complaint preset, a locker row, Wake Up/Close). Simulated clicks are dropped while the Editor is in the background.
 - [ ] Check the invert-mouse direction with the real mouse (the logic is unit-tested).
@@ -11,6 +12,10 @@ One line per item: status, item, notes.
 - [ ] Tune the guessed numbers: hold times, upgrade costs, rank thresholds, pull timings, lighting fade, sound volumes, FOV, sensitivity.
 
 ## Next slices
+- [ ] The hall door's purple slit overlaps its text (cosmetic; move the slit or the text).
+- [ ] A real cut-out for rooms that stay locked (a pass-through sign or a closer-look text when the player presses E on a closed door).
+- [ ] More oddities for Associate days and a later "weirder" layer for the discovery pass.
+- [ ] Per-job how-to cards for the mini-games (they explain themselves on screen now).
 - [ ] Pause menu that reopens the setup screen (invert, sensitivity, FOV) plus volume and a "skip the pull" option.
 - [ ] Make the later-job tools real once the server-hall jobs exist (flashlight, keycard, anti-static strap, cable tester, crash cart, ladder, thermal camera, fire extinguisher).
 - [ ] Apply the CLI research to the portable kit (C:/Code/unity-claude-kit, the owner's call): see the end of Docs/research/unity-cli-play-and-frames.md.
@@ -24,6 +29,7 @@ One line per item: status, item, notes.
 - [ ] Play Mode tests for the flow (frames advance in the background with set_autotick plus run-in-background; see the research note).
 
 ## Done
+- [x] Ten-job system: eleven jobs, three step kinds, three mini-games, unlockable rooms with doors, tool-gated jobs, Specialist oddities (2026-10-24, evening).
 - [x] Invert mouse defaults to on; the mirrored SUPPLIES sign fixed and all 24 world signs checked (2026-10-24).
 - [x] Kit 1.2.0: `unity-ops.sh play-begin`, `play-end` and `snap` (2026-10-24).
 - [x] Git repository on `main` with a Unity `.gitignore` (2026-10-24).

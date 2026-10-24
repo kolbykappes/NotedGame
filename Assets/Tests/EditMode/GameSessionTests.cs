@@ -145,7 +145,11 @@ namespace Noted.Core.Tests
             s.Ledger.TryBuy(s.Wallet, s.Upgrades.Find("auto_printer"));
             s.Ledger.TryBuy(s.Wallet, s.Upgrades.Find("auto_shredder"));
             int before = s.Wallet.Balance;
-            var list = s.BeginDay();
+            var list = s.BeginDayWith(new[]
+            {
+                new TaskInstance(s.Tasks.Find("coffee"), TaskStatus.Automated),
+                new TaskInstance(s.Tasks.Find("printer"), TaskStatus.Automated),
+            });
             Assert.IsTrue(list.All(t => t.Status == TaskStatus.Automated));
             var summary = s.EndDay();
             Assert.AreEqual(2, summary.TasksAutomated);
@@ -190,7 +194,7 @@ namespace Noted.Core.Tests
         }
 
         [Test]
-        public void SpecialistDay_HasAllFiveTaskTypes()
+        public void SpecialistDay_HasFiveDifferentJobs()
         {
             var cfg = new GameConfig();
             var tasks = TaskCatalog.Default();
@@ -200,7 +204,7 @@ namespace Noted.Core.Tests
         }
 
         [Test]
-        public void RankOne_ForcesUnseenNewTypesOntoTheList()
+        public void UnseenJobTypes_ComeBeforeSeenOnes()
         {
             var cfg = new GameConfig();
             var tasks = TaskCatalog.Default();
@@ -208,21 +212,24 @@ namespace Noted.Core.Tests
             for (int seed = 0; seed < 25; seed++)
             {
                 var list = DayPlanner.Plan(cfg, tasks, 1, seen, new HashSet<string>(), seed);
-                var ids = list.Select(t => t.Definition.Id).ToList();
-                Assert.IsTrue(ids.Contains("filter") && ids.Contains("temperature"), "seed " + seed);
+                Assert.IsTrue(list.All(t => !seen.Contains(t.Definition.Id)), "seed " + seed + ": " + string.Join(",", list.Select(t => t.Definition.Id)));
             }
         }
 
         [Test]
-        public void EveryStarterTask_IsAShortFetchQuest()
+        public void EveryJob_HasShortHolds_AndEveryStationHasARoom()
         {
             var tasks = TaskCatalog.Default();
+            var areas = AreaCatalog.Default();
             foreach (var t in tasks.All)
             {
-                Assert.AreEqual(2, t.Steps.Count, t.Id + " should be pick up, then deliver");
-                Assert.IsNotNull(t.Steps[0].GivesCarry, t.Id);
-                Assert.AreEqual(t.Steps[0].GivesCarry, t.Steps[1].RequiresCarry, t.Id);
-                foreach (var step in t.Steps) Assert.LessOrEqual(step.HoldSeconds, 3f, t.Id + " hold is too long to stand and wait");
+                foreach (var step in t.Steps)
+                {
+                    Assert.LessOrEqual(step.HoldSeconds, 3f, t.Id + " hold is too long to stand and wait");
+                    Assert.IsTrue(areas.StationIds.Contains(step.StationId), t.Id + ": station " + step.StationId + " has no room");
+                    if (step.Kind != StepKind.Hold) Assert.AreEqual(0f, step.HoldSeconds, t.Id);
+                    if (step.Kind == StepKind.MiniGame) Assert.AreNotEqual(MiniGameKind.None, step.Game, t.Id);
+                }
             }
         }
 
