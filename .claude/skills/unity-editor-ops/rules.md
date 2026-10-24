@@ -129,7 +129,7 @@ ask what it would look like if it were lying, and pay the one extra call that te
   failed attempts and war stories behind each rule; read on demand).
 - Project (owned by the project, never copied between projects): `.claude/project/profile.md` (facts, protected paths, doc map),
   `.claude/project/workflow.md` (scope, backlog, doc duties), `.claude/project/lessons.md` (verified project-specific traps).
-- Helper: `unity-ops.sh preflight|save|compile|test`. It leans on native CLI commands (`recompile`, `run_tests`,
+- Helper: `unity-ops.sh preflight|save|compile|test|play-begin|play-end|snap` (the last three implement rules 3a and 35 to 38). It leans on native CLI commands (`recompile`, `run_tests`,
   `list_open_scenes`, `save_all`, `console_status`); prefer the vendor's own solution over hand-rolling.
 - **Tests with the Editor open: `unity command run_tests`, never `unity test`.** The latter spawns a second batch-mode Editor on
   the same project (rule 8). `run_tests` returns `success:true` with 0 tests; treat 0/0 as "no tests ran", not a pass (rules 19, 24).

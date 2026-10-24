@@ -303,7 +303,7 @@ namespace Noted.EditorTools
 
             // Supply shelf (filters).
             Station("SupplyShelf", "filter_shelf", new Vector3(-19.6f, 1.0f, 11f), new Vector3(0.6f, 2.0f, 2.4f), mWood);
-            Sign(rSigns, "SignSupplies", "SUPPLIES", new Vector3(-19.45f, 2.5f, 12.0f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignSupplies", "SUPPLIES", new Vector3(-19.82f, 2.5f, 10.4f), -90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
 
             // Table, chairs, vending machine, plant.
             Box(rProps, "BreakTable", new Vector3(-14f, 0.4f, 8f), new Vector3(2.4f, 0.8f, 1.2f), mWood);
@@ -353,7 +353,7 @@ namespace Noted.EditorTools
 
             // The vent at the far east end of the corridor.
             var vent = Station("Vent", "vent", new Vector3(29.8f, 1.5f, 0f), new Vector3(0.2f, 1.1f, 1.5f), mDark);
-            Sign(rSigns, "SignVent", "VENT 7", new Vector3(29.62f, 2.45f, 0.45f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignVent", "VENT 7", new Vector3(29.86f, 2.45f, 0.45f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
 
             // Thermostat on the corridor's south wall, beside the east window.
             Station("Thermostat", "thermostat", new Vector3(8.7f, 1.4f, -1.88f), new Vector3(0.3f, 0.4f, 0.12f), mCream);
@@ -361,8 +361,8 @@ namespace Noted.EditorTools
 
             // Corridor signs (viewed from the corridor).
             Sign(rSigns, "SignAuthorized", "AUTHORIZED PERSONNEL ONLY", new Vector3(-2.6f, 2.55f, -1.76f), 180f, 0.04f, 40, Cream, TextAnchor.UpperLeft);
-            Sign(rSigns, "SignCorridorWelcome", "THE SOLACE INITIATIVE", new Vector3(-29.7f, 2.6f, 1.2f), -90f, 0.06f, 44, Cream, TextAnchor.UpperLeft);
-            Sign(rSigns, "SignCorridorSlogan", "Always Within Tolerance", new Vector3(29.7f, 2.4f, -1.2f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignCorridorWelcome", "THE SOLACE INITIATIVE", new Vector3(-29.86f, 2.6f, 1.2f), -90f, 0.06f, 44, Cream, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignCorridorSlogan", "Always Within Tolerance", new Vector3(29.86f, 2.4f, -1.2f), 90f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
         }
 
         static void BuildServerHall()
@@ -421,6 +421,7 @@ namespace Noted.EditorTools
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = new Color(0.05f, 0.07f, 0.08f);
                 camera.farClipPlane = 120f;
+                contents.GetComponent<PlayerLook>().InvertY = true;   // this game defaults to an inverted mouse
                 var it = contents.GetComponent<Interactor>();
                 if (it == null) it = contents.AddComponent<Interactor>();
                 Set(it, "actions", actions);

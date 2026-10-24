@@ -189,7 +189,7 @@ MonoBehaviour:
   horizontalFov: 100
   mouseSensitivity: 0.1
   stickDegreesPerSecond: 180
-  invertY: 0
+  invertY: 1
   pitchLimit: 85
 --- !u!114 &149256166396889236
 MonoBehaviour:

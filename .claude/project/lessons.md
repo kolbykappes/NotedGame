@@ -35,3 +35,5 @@ in the kit instead (a new numbered rule, or a cold-tier note). Annotate correcti
 - **`FindObjectsByType` with a sort-mode argument is obsolete here**; use the single-argument overloads in eval code.
 - **Python `re.sub` replacement strings interpret `\n`** as a newline; building C# source with it produced a broken string literal. Use `str.replace` or escape the backslash.
 - **A Play session can leave the open scene dirty** (for example the lighting fade); run `unity-ops.sh save` before scripted scene work, then rebuild.
+- **Use the kit helpers for Play Mode checks:** `unity-ops.sh play-begin`, `snap <name>` (PNG in `Temp/unity-ops-shots/`) and `play-end` (kit 1.2.0). `tools/play_helpers.ps1` remains for the game-specific steps (placing the player, holding E, clicking UI handlers).
+- **Sign orientation rule (world-space canvas, yaw about Y):** yaw 0 is readable from the south, 180 from the north, +90 from the west, -90 from the east. A sign on a wall is read from the side with open space; check with a quick `Physics.CheckSphere` pass (solid just behind, clear in front).

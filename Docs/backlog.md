@@ -24,6 +24,8 @@ One line per item: status, item, notes.
 - [ ] Play Mode tests for the flow (frames advance in the background with set_autotick plus run-in-background; see the research note).
 
 ## Done
+- [x] Invert mouse defaults to on; the mirrored SUPPLIES sign fixed and all 24 world signs checked (2026-10-24).
+- [x] Kit 1.2.0: `unity-ops.sh play-begin`, `play-end` and `snap` (2026-10-24).
 - [x] Git repository on `main` with a Unity `.gitignore` (2026-10-24).
 - [x] Movement and camera (2026-10-24).
 - [x] Core rules, five tasks, rank, wallet, 11 upgrades, complaint replies (2026-10-24).

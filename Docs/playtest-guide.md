@@ -5,7 +5,7 @@
 ## How to play it
 1. Open `Assets/Scenes/Facility.unity` (it should already be open) and press **Play**. Click into the Game view if the cursor is not locked.
 2. **Controls:** WASD move, mouse look, Shift sprint, **E** interact (hold for tasks, press for the cot, the terminal and the locker), **Space or Enter** continue a card, **I** toggles invert on the setup screen, **Space, Enter, Esc or a click** skips the pull, **Esc** frees the mouse (click in the game to lock it again).
-3. **The loop:** **setup menu** (invert mouse, sensitivity, field of view; remembered) → intro card (rank and code) → how-to card for each new task type → a 60-second day with a task list, a visible clock and a carry counter → at zero the game cuts to third person and types your code → quiet time (lights dim; pick up loose Uptime, file a complaint at the lit terminal, open the **tool locker** at the locker in the admin room, or press E at the cot) → promotion card if you ranked up → the tool locker (night) → Wake Up.
+3. **The loop:** **setup menu** (invert mouse **on by default**, sensitivity, field of view; remembered) → intro card (rank and code) → how-to card for each new task type → a 60-second day with a task list, a visible clock and a carry counter → at zero the game cuts to third person and types your code → quiet time (lights dim; pick up loose Uptime, file a complaint at the lit terminal, open the **tool locker** at the locker in the admin room, or press E at the cot) → promotion card if you ranked up → the tool locker (night) → Wake Up.
 4. **Where things are** (you wake in the admin room, far west of the building): break room (coffee machine, supply shelf with filters), print room (printer, shredder), office (paper stack, clipboard), utility room at the far east (coffee beans, dumpster). The vent is at the east end of the corridor, the thermostat by the east window. The server hall behind the windows cannot be entered.
 
 ## The tasks (short fetch quests; the walking is the work)
@@ -37,6 +37,7 @@ The HUD shows the tools you own under your rank.
 6. **The pull camera and console** after moving the camera closer and enlarging the monitor and text.
 
 ## Tuning knobs
+- Invert mouse defaults to **ON** (`SetupScreen.DefaultInvertY`; the Player prefab also starts inverted). Saved choices override it.
 - `Assets/Scripts/Core/GameConfig.cs`: day length (60), hold-time scale (1.0), carry capacity (1), coins per task (10), tasks per rank, rank thresholds, shoes bonus.
 - `Assets/Scripts/Core/TaskModel.cs`: hold seconds for every step. `Assets/Scripts/Core/Economy.cs`: tool costs, growth and levels.
 - `PlayerMotor` on the Player prefab: walk and sprint speed. `PullSequence`: walk, digit and hold times. `LightingController`, `Sfx`.

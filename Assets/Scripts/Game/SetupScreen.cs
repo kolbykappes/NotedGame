@@ -15,6 +15,9 @@ namespace Noted.Game
         public const string KeyMouseSensitivity = "noted.mouseSensitivity";
         public const string KeyHorizontalFov = "noted.horizontalFov";
 
+        /// <summary>This game defaults to an inverted mouse until the player chooses otherwise.</summary>
+        public const bool DefaultInvertY = true;
+
         [SerializeField] GameObject root;
         [SerializeField] Button invertButton;
         [SerializeField] Text invertText;
@@ -95,7 +98,7 @@ namespace Noted.Game
             done = finished;
 
             // Remembered choices win over the prefab's defaults.
-            look.InvertY = PlayerPrefs.GetInt(KeyInvertY, look.InvertY ? 1 : 0) != 0;
+            look.InvertY = PlayerPrefs.GetInt(KeyInvertY, DefaultInvertY ? 1 : 0) != 0;
             look.MouseSensitivity = PlayerPrefs.GetFloat(KeyMouseSensitivity, look.MouseSensitivity);
             look.HorizontalFov = PlayerPrefs.GetFloat(KeyHorizontalFov, look.HorizontalFov);
 

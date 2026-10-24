@@ -20,7 +20,7 @@ namespace Noted.Game
         [SerializeField] float mouseSensitivity = 0.1f;
         [Tooltip("Degrees per second at full stick deflection.")]
         [SerializeField] float stickDegreesPerSecond = 180f;
-        [SerializeField] bool invertY;
+        [SerializeField] bool invertY = true;
         [SerializeField] float pitchLimit = 85f;
 
         InputAction look;

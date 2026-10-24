@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unity Editor ops: preflight | save | compile | test. Fail-closed: anything unexpected exits non-zero.
+# Unity Editor ops: preflight | save | compile | test | play-begin | play-end | snap. Fail-closed: anything unexpected exits non-zero.
 # Exit codes: 0 ok, 1 real failure, 2 refused (unsafe state), 3 unparseable/unexpected output, 4 no tests ran.
 set -u
 
@@ -18,6 +18,7 @@ find_project() {
 PROJ="${UNITY_PROJECT_PATH:-$(find_project)}"
 [ -n "$PROJ" ] || { echo "[unity-ops] REFUSED: no Unity project found (set UNITY_PROJECT_PATH)"; exit 2; }
 echo "[unity-ops] target=$PROJ"
+STATE="$PROJ/Temp/unity-ops-play.state"   # written by play-begin, required by play-end (only stop sessions you started: rule 25)
 
 U() { unity command "$@" --project-path "$PROJ" --result-only; }
 
@@ -96,5 +97,49 @@ case "${1:-}" in
     fi
     echo "[unity-ops] TESTS PASSED" ;;
 
-  *) echo "usage: $0 preflight|save|compile|test [editor|playmode|all] [filter]"; exit 2 ;;
+  play-begin) # rules 3a, 25, 35, 38: enter Play Mode so frames advance even with the Editor in the background, and prove it
+    preflight
+    [ "$PLAY" = stopped ] || { echo "[unity-ops] REFUSED: Play Mode is $PLAY - a session you did not start belongs to the user (rule 25)"; exit 2; }
+    [ -z "$DIRTY" ] || { echo "[unity-ops] REFUSED: dirty scenes ($DIRTY) - run: unity-ops.sh save"; exit 2; }
+    [ ! -f "$STATE" ] || { echo "[unity-ops] REFUSED: a play-begin is already recorded ($STATE) - run play-end first"; exit 2; }
+    orig=$(need 'j.result' "$(U eval --code 'return UnityEngine.Application.runInBackground.ToString();')") || exit 3
+    mkdir -p "$PROJ/Temp"; printf '%s\n' "$orig" > "$STATE"   # remember the project's value so play-end can restore it
+    U set_autotick >/dev/null || { rm -f "$STATE"; exit 3; }
+    U editor_play >/dev/null || { rm -f "$STATE"; exit 3; }
+    unity status --until-ready --project-path "$PROJ" >/dev/null 2>&1 || { echo "[unity-ops] Editor not ready after editor_play"; exit 3; }
+    U eval --code 'UnityEngine.Application.runInBackground = true; return "ok";' >/dev/null || exit 3
+    w=$(unity command wait_for --project-path "$PROJ" --result-only -- --condition '{"member":"UnityEngine.Time.frameCount","op":"changed"}' --timeout_s 10) || { echo "[unity-ops] wait_for failed"; exit 3; }
+    [ "$(need 'j.met' "$w")" = true ] || { echo "[unity-ops] FROZEN: frames are not advancing (rule 3a). Run play-end."; printf '%s\n' "$w" | head -c 400; exit 1; }
+    echo "[unity-ops] play-begin OK: frames advancing (runInBackground was $orig; play-end restores it)" ;;
+
+  play-end) # rule 38: restore every override, stop the session this script started, and check settings did not change
+    [ -f "$STATE" ] || { echo "[unity-ops] REFUSED: no play-begin recorded - this is not a session you started (rule 25)"; exit 2; }
+    orig=$(tr -d '\r\n' < "$STATE"); case "$orig" in True|False) ;; *) orig=False ;; esac
+    low=$(printf '%s' "$orig" | tr 'A-Z' 'a-z')
+    U eval --code "UnityEngine.Time.timeScale = 1f; UnityEngine.Application.runInBackground = $low; return \"ok\";" >/dev/null || { echo "[unity-ops] could not restore runInBackground; state file kept ($STATE)"; exit 3; }
+    unity command set_autotick --project-path "$PROJ" --result-only -- --enable false >/dev/null 2>&1 || true
+    U editor_stop >/dev/null || { echo "[unity-ops] editor_stop failed; state file kept"; exit 3; }
+    unity status --until-ready --project-path "$PROJ" >/dev/null 2>&1 || { echo "[unity-ops] Editor not ready after editor_stop"; exit 3; }
+    now=$(need 'j.result' "$(U eval --code 'return UnityEditor.PlayerSettings.runInBackground.ToString();')") || exit 3
+    [ "$now" = "$orig" ] || { echo "[unity-ops] FAILED: runInBackground is $now, expected $orig"; exit 1; }
+    rm -f "$STATE"
+    # the screenshot folder from `snap` becomes an asset; remove it
+    rm -rf "$PROJ/Assets/Screenshots" "$PROJ/Assets/Screenshots.meta"
+    if command -v git >/dev/null 2>&1 && git -C "$PROJ" rev-parse --git-dir >/dev/null 2>&1; then
+      ch=$(git -C "$PROJ" status --short -- ProjectSettings 2>/dev/null)
+      [ -z "$ch" ] || { echo "[unity-ops] WARNING: ProjectSettings changed during the session:"; printf '%s\n' "$ch"; exit 1; }
+    fi
+    echo "[unity-ops] play-end OK: stopped, runInBackground=$orig restored, no ProjectSettings change" ;;
+
+  snap) # usage: snap <name> [width] [height]. Rule 36: capture the real Game view (overlay UI included); needs frames advancing (play-begin)
+    name="${2:-snap}"; w="${3:-1600}"; h="${4:-900}"
+    case "$name" in *[!A-Za-z0-9_-]*|"") echo "[unity-ops] REFUSED: snap name must be letters, digits, _ or -"; exit 2 ;; esac
+    es=$(U editor_status) || exit 3
+    [ "$(need 'j.playMode' "$es")" = playing ] || { echo "[unity-ops] REFUSED: not in Play Mode (run play-begin first)"; exit 2; }
+    out=$(unity command capture_game_view --project-path "$PROJ" --result-only -- --source screen --width "$w" --height "$h" --save_path "Screenshots/$name.png") || { echo "[unity-ops] capture_game_view failed"; exit 3; }
+    [ -f "$PROJ/Assets/Screenshots/$name.png" ] || { echo "[unity-ops] capture reported but no file at Assets/Screenshots/$name.png"; printf '%s\n' "$out" | head -c 400; exit 3; }
+    mkdir -p "$PROJ/Temp/unity-ops-shots"; cp "$PROJ/Assets/Screenshots/$name.png" "$PROJ/Temp/unity-ops-shots/$name.png"
+    echo "[unity-ops] snap saved: $PROJ/Temp/unity-ops-shots/$name.png (Assets/Screenshots is removed by play-end)" ;;
+
+  *) echo "usage: $0 preflight|save|compile|test [editor|playmode|all] [filter]|play-begin|play-end|snap <name> [w] [h]"; exit 2 ;;
 esac

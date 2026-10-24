@@ -11,7 +11,7 @@ Verified 2026-10-17 against Unity 6000.6.6f1, CLI 1.0.0-beta.13, `com.unity.pipe
 so re-check with `unity command --query <term> --detail full` before trusting a verb.
 
 `unity-ops.sh` resolves the Unity project root itself (`UNITY_PROJECT_PATH`, else the nearest ancestor holding
-`ProjectSettings/ProjectVersion.txt`) and prints `target=` on every run, so a worktree resolves to its own path (rules 21, 27). Helper: `bash .claude/skills/unity-editor-ops/unity-ops.sh <preflight|save|compile|test>`
+`ProjectSettings/ProjectVersion.txt`) and prints `target=` on every run, so a worktree resolves to its own path (rules 21, 27). Helper: `bash .claude/skills/unity-editor-ops/unity-ops.sh <preflight|save|compile|test|play-begin|play-end|snap>`
 (prints `[unity-ops] target=...` every run; exit 0 ok, 1 real failure, 2 refused, 3 unparseable, 4 no tests ran).
 
 ## What the CLI already gives you (don't hand-roll)
@@ -61,7 +61,10 @@ finally { if (rig) UnityEngine.Object.DestroyImmediate(rig); }
 ```
 
 ## Procedure 6 - Play Mode proof with a background Editor (rules 3a, 35 to 38)
-Only for a check that needs the running game. Start from a stopped Editor (rule 25). In order:
+Only for a check that needs the running game. Start from a stopped Editor (rule 25).
+**Shortcut: `unity-ops.sh play-begin`** does steps 1 to 3 (and records the project's Run In Background value), **`unity-ops.sh snap <name>`**
+does the capture in step 4 (the PNG lands in `Temp/unity-ops-shots/`), and **`unity-ops.sh play-end`** does step 5 and fails if the
+restored value or `ProjectSettings` differ. `play-end` refuses to stop a session that `play-begin` did not start. By hand, in order:
 1. `unity command set_autotick`, then `unity command eval "UnityEngine.Application.runInBackground = true; return \"ok\";"`
    (use `editor_set_run_in_background` if `unity command --query background` lists it).
 2. `unity command editor_play`, then `unity status --until-ready --project-path P`.
