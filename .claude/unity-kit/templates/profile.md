@@ -24,6 +24,7 @@ Unity <6000.x.y>, <render pipeline + version>, <input system>, <UI framework>, <
 ## Editor settings that matter
 
 - Enter Play Mode options: domain reload on/off, scene reload on/off (kit rule 9 depends on this).
+- Run In Background (`PlayerSettings.runInBackground`): the project's saved value, and whether the project wants it on (kit rules 3a and 38 override it temporarily and restore it).
 - Anything else a kit rule asks about (focus behaviour on this Editor version, quality settings that affect captures).
 
 ## Protected (approval and a stated plan first), beyond the kit defaults
@@ -33,7 +34,7 @@ List anything extra, and any sanctioned bulk-regeneration tools (kit rule 29).
 
 ## Helpers
 
-- Off-screen render helper for visual checks without Play frames (kit rule 3a), focus probe, measurement scripts: name and path.
+- Off-screen render helper for Edit Mode visual checks (kit rule 3a), Play Mode helper scripts (play-begin and play-end, capture; kit rules 35 to 38), focus probe, measurement scripts: name and path.
 
 ## Documentation map
 

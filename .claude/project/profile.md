@@ -23,6 +23,7 @@ Unity CLI 1.0.0-beta.13, `com.unity.pipeline` 0.8.0-exp.1 (installed 2026-10-24 
 ## Editor settings that matter
 
 - Enter Play Mode options: **domain reload off, scene reload on** (`m_EnterPlayModeOptions: 1`). Kit rule 9 applies: no mutable statics without a reset hook.
+- Run In Background (`PlayerSettings.runInBackground`): **off** (saved value). Kit rules 3a and 38: turn it on only for a Play Mode check with the Editor in the background, and restore it to off before `editor_stop`. Helpers: `tools/play_helpers.ps1` (`PlayBegin`, `PlayEnd`, `Snap`).
 
 ## Protected (approval and a stated plan first), beyond the kit defaults
 

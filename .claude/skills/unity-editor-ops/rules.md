@@ -43,13 +43,20 @@ ask what it would look like if it were lying, and pay the one extra call that te
    First question on "the key does nothing": was the window focused?
 3. Never set `backgroundBehavior = IgnoreFocus` to fix #2. Tried; it makes the Editor read chat-window typing as game input
    (a typed letter is a short tap; against a hold interaction it reads as "hold began, never completed").
-3a. **Tested 2026-10-18 (Unity 6000.6.6f1, Pipeline 0.8.0-exp.1): `set_autotick` does NOT keep Play frames advancing while the
-    Editor is unfocused**, whether minimised or merely covered, at 16 ms or 1 ms (the vendor docs say it should). Frames sit
-    still, yet `status` says "playing". `editor_play`, `editor_stop` and `set_autotick` do not steal focus; **toggling
-    `EditorApplication.isPaused` does** (it un-minimised the window). `EditorApplication.Step()` advanced exactly one frame while
-    paused. `QueuePlayerLoopUpdate` and `SignalTick` did nothing. So: do Edit Mode work and synchronous checks (they run fine
-    unfocused), render with an off-screen `Camera.Render`-to-texture helper (the profile names the project's), and batch frame-dependent checks (physics settling) for a
-    moment when the user says the Editor may be in front. Never use `isPaused` or `editor_focus` unasked. A project focus probe, if any, is named in the profile.
+3a. **Play frames and a background Editor (corrected 2026-10-24; first tested 2026-10-18).** When the Editor is not the active
+    window and Run In Background is off, Play Mode reports `isPlaying` while `Time.frameCount` stays frozen (measured on Unity
+    6000.6.6f1, Pipeline 0.8.0-exp.1: frame 2, and `wait_for` on `frameCount` `changed` timed out). **`set_autotick` alone does
+    not fix it** (confirmed on both dates). **`set_autotick` plus `Application.runInBackground = true` does**: frames advanced at
+    several hundred per second with the Editor in the background. The 2026-10-18 note concluded that autotick cannot keep frames
+    moving because it never set Run In Background; the CLI's own guide documents both switches. Recipe: `set_autotick`, then
+    `eval "UnityEngine.Application.runInBackground = true;"` (packages that have it: `editor_set_run_in_background`), then
+    `editor_play`, then prove it with `wait_for` (rule 35). The override changes the in-memory project setting, so restore it before
+    leaving Play Mode (rule 38). If the Editor window is the active application none of this is needed. Also measured 2026-10-18:
+    `editor_play`, `editor_stop` and `set_autotick` do not steal focus; **toggling `EditorApplication.isPaused` does**
+    (it un-minimised the window); `EditorApplication.Step()` advanced exactly one frame while paused; `QueuePlayerLoopUpdate` and
+    `SignalTick` did nothing. Edit Mode work and off-screen renders (a `Camera.Render`-to-texture helper, named in the profile)
+    remain the right tools when Play Mode is not needed. Never use `isPaused` or `editor_focus` unasked; a project focus probe,
+    if any, is named in the profile.
 4. **Nothing written during Play Mode persists except assets.** Scene edits and ProjectSettings changes report success, read back
    correctly, then revert the instant Play Mode stops. Stop Play Mode before any scene/settings write, and verify the **file on
    disk**, never the property read-back.
@@ -163,7 +170,7 @@ Testing and builds
     and never silently switch platform. Keep temporary reports outside the source tree.
 
 Play-mode and visual verification
-32. Prove frames advance before trusting a screenshot (rule 1; Play Mode is also limited by rule 3a). Choose the capture source
+32. Prove frames advance before trusting a screenshot (rule 1; see rules 3a and 35 to 38 for how, with a background Editor). Choose the capture source
     explicitly: a camera-only capture omits Screen Space Overlay UI. Read Console errors as well as looking at the image.
     A frozen, single-colour or locked-desktop capture is inconclusive, not a pass. Do not change shipping Player Settings
     just to keep a playtest ticking. Runtime tuning is temporary unless deliberately written to the right asset or code.
@@ -177,3 +184,21 @@ CLI behaviour (sources: Unity CLI docs, Pipeline changelog and the Unity-Technol
     use `unity status` and the Editor log. Branch on `success`/exit code and `--format json` fields, not readable text.
 34. Do not install or upgrade the CLI, packages, plugins or Editors without approval. `package_add`/`package_remove` count as
     manifest edits. Never use automatic project-upgrade consent flags unless the user explicitly authorises the upgrade.
+
+Play Mode with a background Editor (added 2026-10-24, from testing against Unity 6000.6.6f1, CLI beta.13, Pipeline 0.8.0-exp.1)
+35. **Prove the frames move with `wait_for`**, server-side: `unity command wait_for -- --condition '{"member":"UnityEngine.Time.frameCount","op":"changed"}' --timeout_s 10`
+    must return `met: true`. `timedOut: true` with an unchanged count is the frozen-Editor symptom (rule 3a). Do this before any
+    capture or state read in Play Mode; "playing" and a returned screenshot are setup, not proof.
+36. **Look at the real screen with `capture_game_view`** (`source=screen`, the default): it captures what the Game window shows,
+    including Screen Space Overlay UI, and works with the Editor in the background once frames are moving. `screenshot` captures the
+    camera only. `save_path` is project-relative, is written under `Assets/` (it imports as an asset with a `.meta`) and rejects
+    paths containing `..`: copy the PNG out and delete the folder afterwards. Keep an off-screen render helper for Edit Mode.
+37. **Simulated input is dropped while the Editor is in the background.** Unity disables the keyboard and mouse devices
+    (`ResetAndDisableNonBackgroundDevices`), so `simulate_key`, `simulate_pointer` and `InputSystem.QueueStateEvent` can return
+    success and do nothing (they work when the Editor window is the active application). Do not use `IgnoreFocus` to get around
+    it (rule 3). Drive the game through its own methods or `eval`, add a small test hook where an input path itself must be
+    exercised (for example a "simulate held" flag on the interactor), and ask a human for real clicks on UI.
+38. **Restore every override before `editor_stop`:** `Application.runInBackground`, `Time.timeScale`, `set_autotick`, and any Input
+    System setting changed for a test. Then confirm `git status` shows no `ProjectSettings` or input-settings change. This is how
+    rule 32's "do not change shipping Player Settings to keep a playtest ticking" is honoured when rule 3a needs the override.
+    `Time.timeScale` below 1 is a cheap way to capture short sequences (a camera cut, a timed animation); put it back to 1.

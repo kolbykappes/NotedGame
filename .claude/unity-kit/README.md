@@ -23,7 +23,7 @@ How they connect:
 
 The profile answers these (see `templates/profile.md`): Unity project root and primary path; code, Editor-tooling and scratch-script
 folders; assembly definitions; versions; domain/scene reload settings (rule 9); extra protected paths and sanctioned regeneration
-tools (rule 29); off-screen render helper and focus probe (rule 3a); the research folder (the "research before craft" rule); and
+tools (rule 29); off-screen render helper, Play Mode helpers and focus probe (rules 3a, 35 to 38); the research folder (the "research before craft" rule); and
 the doc map. The workflow file answers: scope and non-goals, research and backlog duties, which docs must be updated with a change.
 
 ## Using the kit in a new project

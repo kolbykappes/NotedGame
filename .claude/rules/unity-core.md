@@ -66,8 +66,10 @@ Traps that must hold every session (full list and reasons in rules.md and `.clau
   worktree is a separate Unity project with its own Editor (rule 27). Discover command names with `unity command --query <term>`;
   the surface is beta and changes between versions.
 - Read `Application.isPlaying` and `Time.frameCount` together; a "playing" flag proves nothing (rule 2.1).
-- An unfocused Editor may not advance Play frames, and `set_autotick` did not fix it when tested (rule 3a). Do Edit Mode work and
-  off-screen renders, and ask before anything frame-dependent. Never use `isPaused` or `editor_focus` unasked.
+- With the Editor in the background, Play frames freeze unless `set_autotick` **and** `Application.runInBackground = true` are
+  both on (rule 3a). Prove frames advance with `wait_for` on `Time.frameCount` (rule 35); look with `capture_game_view` (rule 36);
+  simulated keyboard and mouse input is dropped in the background (rule 37); restore every override before stopping (rule 38).
+  Never use `isPaused` or `editor_focus` unasked.
 - A Play or paused session you did not start is the user's: stay read-only (rule 25). Never kill the Editor or delete a lock file.
 - Nothing written in Play Mode persists except assets (rule 4). Stop Play Mode, save dirty scenes, write through the Editor API,
   verify the file on disk (rules 4 to 6). Never hand-edit open `.unity`/`.prefab`/`.asset` files.

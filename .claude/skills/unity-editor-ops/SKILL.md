@@ -60,5 +60,16 @@ try { rig = (GameObject)UnityEngine.Object.Instantiate(prefab); /* measure */ }
 finally { if (rig) UnityEngine.Object.DestroyImmediate(rig); }
 ```
 
+## Procedure 6 - Play Mode proof with a background Editor (rules 3a, 35 to 38)
+Only for a check that needs the running game. Start from a stopped Editor (rule 25). In order:
+1. `unity command set_autotick`, then `unity command eval "UnityEngine.Application.runInBackground = true; return \"ok\";"`
+   (use `editor_set_run_in_background` if `unity command --query background` lists it).
+2. `unity command editor_play`, then `unity status --until-ready --project-path P`.
+3. Prove frames move: `unity command wait_for --project-path P -- --condition '{"member":"UnityEngine.Time.frameCount","op":"changed"}' --timeout_s 10` must say `met: true`.
+4. Read state through `eval`; look with `unity command capture_game_view --project-path P -- --source screen --save_path Screenshots/x.png`
+   (written under `Assets/`; copy it out and delete the folder). Drive the game through its own methods, not key or mouse events (rule 37).
+5. Before stopping: `eval "UnityEngine.Application.runInBackground = false;"`, `set_autotick -- --enable false` if you enabled it,
+   `unity command editor_stop`, then confirm `git status` shows no settings change (rule 38).
+
 ## Never without explicit user approval
 `ProjectSettings/`, `Packages/manifest.json`, input bindings, tags, layers, render pipeline, and anything else the profile protects (see `unity-core.md`). `package_add`/`package_remove` via the CLI count as manifest edits.

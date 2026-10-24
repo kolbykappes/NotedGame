@@ -50,6 +50,15 @@ input. A typed letter is a ~50ms tap; against a 0.8s hold interaction, that
 produced "hold began" with no "hold completed" logged — indistinguishable
 from a genuinely broken hold mechanic. Keep the default setting.
 
+**Update 2026-10-24 (Play Mode frames, from tests on a project in the background):** the same background rule means Play Mode
+freezes. With the Editor not the active window and Run In Background off, `isPlaying` was true while `Time.frameCount` sat at 2 and a
+`wait_for` on the frame counter timed out. `set_autotick` alone left it frozen; `set_autotick` plus
+`Application.runInBackground = true` made frames run at several hundred per second in the background. Keyboard and mouse devices stay
+disabled in the background, so `simulate_key` and `simulate_pointer` were accepted by the CLI and ignored by the game; drive the game
+through its own methods instead. `capture_game_view` (source `screen`) captured the real Game window, overlay UI included, while the
+Editor was in the background. See rules 3a and 35 to 38. The same Input System default also explains why a simulated keyboard worked
+earlier in one session: the Editor window was in front.
+
 Also: `InputSystem.QueueStateEvent` does not deliver synthetic input to an
 Editor game view — two independent attempts at automated input injection
 produced no device edge. To exercise an input-gated path without human
