@@ -28,7 +28,7 @@ namespace Noted.Game
 
             if (session.TryGetAvailableStep(stationId, out _, out var step))
             {
-                holdSeconds = step.HoldSeconds * session.Mods.HoldMultiplier;
+                holdSeconds = step.HoldSeconds * session.Config.TaskHoldScale * session.Mods.HoldMultiplier;
                 prompt = "Hold E: " + step.Prompt;
                 return true;
             }

@@ -13,6 +13,7 @@ namespace Noted.Game
         [SerializeField] Text bodyText;
         [SerializeField] Text buttonText;
         [SerializeField] Button button;
+        [SerializeField] RectTransform cardRect;
 
         Action pending;
         float shownAt;
@@ -27,6 +28,7 @@ namespace Noted.Game
 
             var card = UiKit.Panel(dim.transform, "Card", UiKit.DarkTeal,
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-620, -440), new Vector2(620, 440));
+            cardRect = card.rectTransform;
             titleText = UiKit.Label(card.transform, "Title", "TITLE", 44, UiKit.Yellow, TextAnchor.MiddleLeft,
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(50, -110), new Vector2(-50, -30));
             bodyText = UiKit.Label(card.transform, "Body", "Body", 27, UiKit.Cream, TextAnchor.UpperLeft,
@@ -53,6 +55,15 @@ namespace Noted.Game
             pending = onContinue;
             shownAt = Time.unscaledTime;
             root.SetActive(true);
+
+            // Fit the card to its text (the title, the button and the padding take about 330 px).
+            if (cardRect != null)
+            {
+                Canvas.ForceUpdateCanvases();
+                float height = Mathf.Clamp(bodyText.preferredHeight + 330f, 420f, 880f);
+                cardRect.offsetMin = new Vector2(-620f, -height / 2f);
+                cardRect.offsetMax = new Vector2(620f, height / 2f);
+            }
         }
 
         public void Hide()

@@ -276,7 +276,7 @@ namespace Noted.EditorTools
             wake.rotation = Quaternion.Euler(0f, 180f, 0f);
             stand = new GameObject("ConsoleStandPoint").transform;
             stand.SetParent(rSystems, false);
-            stand.position = new Vector3(-25f, 0.05f, 12.1f);
+            stand.position = new Vector3(-25f, 0.05f, 11.0f);
             stand.rotation = Quaternion.identity;
         }
 
@@ -305,8 +305,6 @@ namespace Noted.EditorTools
             Sign(rSigns, "SignPrint", "PRINT ROOM", new Vector3(-1.8f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Station("Printer", "printer", new Vector3(6.6f, 0.5f, 13.3f), new Vector3(1.5f, 1.0f, 0.9f), mBeige);
             Sign(rSigns, "SignPrinter", "PRINTER", new Vector3(6.0f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
-            Station("ShredderBin", "shredder", new Vector3(-6.6f, 0.45f, 13.3f), new Vector3(0.8f, 0.9f, 0.7f), mDark);
-            Sign(rSigns, "SignShredder", "SHREDDER", new Vector3(-7.3f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Box(rProps, "PrintTable", new Vector3(0f, 0.4f, 8f), new Vector3(3f, 0.8f, 1.2f), mWood);
             Plant(new Vector3(-7f, 0f, 3.2f));
         }
@@ -328,7 +326,9 @@ namespace Noted.EditorTools
         static void BuildUtilityAndCorridor()
         {
             Sign(rSigns, "SignUtility", "UTILITY", new Vector3(23.4f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
-            Box(rProps, "Boiler", new Vector3(27f, 1.1f, 12f), new Vector3(2f, 2.2f, 2f), mDark);
+            Box(rProps, "Boiler", new Vector3(24.5f, 1.1f, 6.5f), new Vector3(2f, 2.2f, 2f), mDark);
+            Station("ShredderBin", "shredder", new Vector3(28.2f, 0.45f, 13.3f), new Vector3(0.8f, 0.9f, 0.7f), mDark);
+            Sign(rSigns, "SignShredder", "SHREDDER", new Vector3(27.5f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Box(rProps, "Crates", new Vector3(23f, 0.4f, 12.4f), new Vector3(1.6f, 0.8f, 1.2f), mWood);
             Box(rProps, "MopBucket", new Vector3(22.2f, 0.25f, 4f), new Vector3(0.5f, 0.5f, 0.5f), mDark);
 
@@ -463,10 +463,10 @@ namespace Noted.EditorTools
 
             var start = new GameObject("AvatarStart").transform;
             start.SetParent(go.transform, false);
-            start.position = new Vector3(-25f, 0.05f, 3.2f);
+            start.position = new Vector3(-23.4f, 0.05f, 3.2f);
             var end = new GameObject("AvatarEnd").transform;
             end.SetParent(go.transform, false);
-            end.position = new Vector3(-25f, 0.05f, 12.0f);
+            end.position = new Vector3(-23.4f, 0.05f, 12.0f);
 
             Set(pull, "pullCamera", cam);
             Set(pull, "avatar", avatar.transform);

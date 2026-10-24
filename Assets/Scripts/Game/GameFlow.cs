@@ -282,10 +282,13 @@ namespace Noted.Game
 
         // ---- Debug helpers, used by verification scripts ----
 
-        /// <summary>Runs the clock out so the pull starts on the next frame.</summary>
+        /// <summary>Runs the clock out and starts the pull now, as if the timer had reached zero.</summary>
         public void DebugExpireClock()
         {
-            if (Session != null && Session.Clock != null) Session.Clock.Tick(10000f);
+            if (Phase != FlowPhase.Day) return;
+            Session.Clock.Tick(10000f);
+            hud.SetTimer(0f);
+            BeginPull();
         }
     }
 }

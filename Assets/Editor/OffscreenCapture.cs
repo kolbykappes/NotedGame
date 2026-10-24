@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -17,6 +18,20 @@ namespace Noted.EditorTools
             var prevTarget = cam.targetTexture;
             var prevActive = RenderTexture.active;
             Texture2D tex = null;
+
+            // Screen Space - Overlay canvases never draw into a render texture, so borrow them for this one render.
+            var borrowed = new List<(Canvas canvas, Camera worldCamera, float plane)>();
+            foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            {
+                if (c.isRootCanvas && c.renderMode == RenderMode.ScreenSpaceOverlay)
+                {
+                    borrowed.Add((c, c.worldCamera, c.planeDistance));
+                    c.renderMode = RenderMode.ScreenSpaceCamera;
+                    c.worldCamera = cam;
+                    c.planeDistance = 1f;
+                }
+            }
+
             try
             {
                 Canvas.ForceUpdateCanvases();
@@ -32,6 +47,13 @@ namespace Noted.EditorTools
             }
             finally
             {
+                foreach (var (canvas, worldCamera, plane) in borrowed)
+                {
+                    if (canvas == null) continue;
+                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    canvas.worldCamera = worldCamera;
+                    canvas.planeDistance = plane;
+                }
                 cam.targetTexture = prevTarget;
                 RenderTexture.active = prevActive;
                 rt.Release();

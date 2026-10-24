@@ -14,6 +14,7 @@ namespace Noted.Game
         [SerializeField] Text uptimeText;
         [SerializeField] Text rankText;
         [SerializeField] Text tasksText;
+        [SerializeField] RectTransform tasksBack;
         [SerializeField] Text promptText;
         [SerializeField] Text carryText;
         [SerializeField] Text toastText;
@@ -47,8 +48,8 @@ namespace Noted.Game
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -92), new Vector2(-28, -56));
 
             // Task list (top left)
-            UiKit.Panel(r, "TasksBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16, -280), new Vector2(560, -16));
+            tasksBack = UiKit.Panel(r, "TasksBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16, -280), new Vector2(560, -16)).rectTransform;
             tasksText = UiKit.Label(r, "Tasks", "", 24, UiKit.Cream, TextAnchor.UpperLeft,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30, -270), new Vector2(548, -26));
 
@@ -113,6 +114,10 @@ namespace Noted.Game
                 }
             }
             tasksText.text = sb.ToString();
+
+            // Size the panel to the list: a heading plus one line per task.
+            int lines = 1 + (tasks != null ? tasks.Count : 0);
+            if (tasksBack != null) tasksBack.offsetMin = new Vector2(16f, -(34f + lines * 32f));
         }
 
         public void SetPrompt(bool show, string prompt, float progress01)

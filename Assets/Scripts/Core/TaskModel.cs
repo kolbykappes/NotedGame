@@ -106,7 +106,7 @@ namespace Noted.Core
                     "Hold E at the printer in the print room until the jam is cleared. Please do not ask what it was printing.",
                     new TaskStep("printer", 10f, "Clear the printer jam")),
                 new TaskDefinition("shredder", "Empty the shredder bin", 0,
-                    "Hold E at the shredder bin in the print room until it is empty. The bin fills faster than expected.",
+                    "Hold E at the shredder bin in the utility room at the far end of the corridor until it is empty. The bin fills faster than expected.",
                     new TaskStep("shredder", 8f, "Empty the shredder bin")),
                 new TaskDefinition("filter", "Swap the air filter", 1,
                     "Two steps. Hold E at the supply shelf to take a clean filter. Then hold E at the vent at the far end of the corridor to install it.",
