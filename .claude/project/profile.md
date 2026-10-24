@@ -15,7 +15,7 @@ Unity CLI 1.0.0-beta.13, `com.unity.pipeline` 0.8.0-exp.1 (installed 2026-10-24 
 
 ## Paths and layout
 
-- Unity project root: `C:\Code\Noted` (not a git repo yet; it is also the checkout root).
+- Unity project root: `C:\Code\Noted` (a git repository on `main`; the project root is also the checkout root).
 - Project code: `Assets/Scripts/Core/` (plain C#, no engine references) and `Assets/Scripts/Game/` (MonoBehaviours). Editor tooling: `Assets/Editor/` (assembly `Noted.Editor`: `FacilityBuilder`, `OffscreenCapture`). Materials made by the builder: `Assets/Materials/Noted_*.mat`. Scratch scripts: `tools/` (outside `Assets/`). Prefabs: `Assets/Prefabs/`. Tests: `Assets/Tests/EditMode/`.
 - Assembly definitions: `Noted.Core` (no references, `noEngineReferences`; game rules and math), `Noted.Game` (references `Noted.Core` and `Unity.InputSystem`), `Noted.Core.Tests` (Editor-only Edit Mode tests; references `Noted.Core` and the test runner assemblies).
 - Third-party content to leave untouched: `Assets/TutorialInfo/`, `Assets/Readme.asset` (template files; may be deleted with approval).
