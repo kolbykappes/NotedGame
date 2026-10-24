@@ -1,5 +1,7 @@
 # MVP spec: the core loop
 
+> **Update 2026-10-24 (afternoon), owner feedback: the five tasks are now short fetch quests (not long holds), the shop is the Tool Locker (with rank-locked tools for later jobs), and a setup menu with invert mouse opens first. See `Docs/playtest-guide.md` for the current design.**
+>
 > **Status 2026-10-24 (late night): the loop below is built and verified in Play Mode with simulated input. See `Docs/playtest-guide.md` for what was built, what is unverified, and the tuning knobs. Differences from this spec: the shredder moved to the far utility room; a global `TaskHoldScale` of 1.5 lengthens every hold; complaining pauses the clock; uncollected coins are banked when you sleep; placeholder sounds were added; the upgrade list is the longer one proposed above.**
 
 *Decided with the owner 2026-10-24. Focus: the mechanics of the core loop. "Discover things" and story are layered on later. Everything here is a placeholder unless marked decided.*
