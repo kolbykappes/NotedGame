@@ -10,4 +10,4 @@ One line per item: status, item, notes.
 - [ ] Code entry at the console.
 - [ ] Preset complaint terminal with canned replies (presets only, no free text).
 - [ ] Night shop (Uptime and rank).
-- [ ] Git: initialise a repository when the owner wants one (not done).
+- [x] Git: repository initialised on `main` with a Unity `.gitignore` and a baseline commit (2026-10-24, owner approved).

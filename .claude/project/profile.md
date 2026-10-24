@@ -37,6 +37,8 @@ None yet (no off-screen render helper, focus probe or measurement scripts).
 | What | Where |
 |---|---|
 | Index | `C:\Code\ClickOne\Docs\concept\README.md` |
+| MVP spec | `Docs/mvp-spec.md` |
+| Art reference and palette | `Docs/art/palette.md` (title-screen placeholder image beside it) |
 | Build status | `Docs/build-status.md` |
 | Backlog / changelog | `Docs/backlog.md`, `Docs/changelog.md` |
 | **Research folder** (kit "research before craft") | `Docs/research/` (index: `Docs/research/README.md`) |
