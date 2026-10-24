@@ -63,6 +63,16 @@ namespace Noted.Core
         MorningBriefing,
         CoinMagnet,
         Automation,
+        CarryCapacity,
+        /// <summary>A tool for jobs that do not exist yet. Shown locked in the locker; has no effect.</summary>
+        FutureTool,
+    }
+
+    public static class UpgradeCategory
+    {
+        public const string Tools = "TOOLS";
+        public const string Contracts = "SERVICE CONTRACTS";
+        public const string Later = "FOR LATER JOBS";
     }
 
     public sealed class UpgradeDefinition
@@ -75,8 +85,14 @@ namespace Noted.Core
         public readonly float CostGrowth;
         public readonly int MaxLevel;
         public readonly string AutomatedTaskId;
+        public readonly string Category;
+        public readonly int MinRank;
 
-        public UpgradeDefinition(string id, string name, string description, UpgradeKind kind, int baseCost, float costGrowth, int maxLevel, string automatedTaskId = null)
+        /// <summary>False for tools whose jobs are not in the game yet. They are listed but cannot be bought.</summary>
+        public readonly bool Available;
+
+        public UpgradeDefinition(string id, string name, string description, UpgradeKind kind, int baseCost, float costGrowth, int maxLevel,
+            string automatedTaskId = null, string category = UpgradeCategory.Tools, int minRank = 0, bool available = true)
         {
             Id = id;
             Name = name;
@@ -86,6 +102,9 @@ namespace Noted.Core
             CostGrowth = costGrowth;
             MaxLevel = maxLevel;
             AutomatedTaskId = automatedTaskId;
+            Category = category;
+            MinRank = minRank;
+            Available = available;
         }
     }
 
@@ -107,22 +126,39 @@ namespace Noted.Core
             return null;
         }
 
-        /// <summary>First-pass costs; all of this is for tuning by hand.</summary>
+        /// <summary>
+        /// The tool locker. Ids are kept from the first version of the shop so saved tests and notes still match.
+        /// First-pass costs; all of this is for tuning by hand.
+        /// </summary>
         public static UpgradeCatalog Default()
         {
             return new UpgradeCatalog(new[]
             {
-                new UpgradeDefinition("longer_day", "Longer Day", "+15 seconds on the clock.", UpgradeKind.LongerDay, 40, 1.6f, 3),
-                new UpgradeDefinition("faster_hands", "Faster Hands", "Tasks take 15% less time to finish.", UpgradeKind.FasterHands, 30, 1.6f, 3),
+                // Tools that help with today's jobs.
+                new UpgradeDefinition("hand_cart", "Hand Cart", "Carry 2 more things at once.", UpgradeKind.CarryCapacity, 35, 1f, 1),
+                new UpgradeDefinition("faster_hands", "Multitool", "Each use takes 15% less time.", UpgradeKind.FasterHands, 30, 1.6f, 3),
                 new UpgradeDefinition("running_shoes", "Running Shoes", "Walk and run 10% faster.", UpgradeKind.RunningShoes, 40, 1.6f, 2),
-                new UpgradeDefinition("long_reach", "Long Reach", "Work from 1 metre farther away.", UpgradeKind.LongReach, 30, 1.6f, 2),
-                new UpgradeDefinition("tidy_habits", "Tidy Habits", "Each finished task adds 3 seconds to the clock.", UpgradeKind.TidyHabits, 70, 1f, 1),
-                new UpgradeDefinition("task_marker", "Task Marker", "Beacons show where your tasks are.", UpgradeKind.TaskMarker, 30, 1f, 1),
-                new UpgradeDefinition("morning_briefing", "Morning Briefing", "See tomorrow's list before you sleep.", UpgradeKind.MorningBriefing, 25, 1f, 1),
-                new UpgradeDefinition("coin_magnet", "Coin Magnet", "Coins find you from farther away.", UpgradeKind.CoinMagnet, 25, 1.6f, 2),
-                new UpgradeDefinition("auto_coffee", "Automatic Coffee Maker", "Coffee is refilled for you every day.", UpgradeKind.Automation, 90, 1f, 1, "coffee"),
-                new UpgradeDefinition("auto_printer", "Printer Service Contract", "The printer is cleared for you every day.", UpgradeKind.Automation, 100, 1f, 1, "printer"),
-                new UpgradeDefinition("auto_shredder", "Shredder Schedule", "The shredder empties itself every day.", UpgradeKind.Automation, 90, 1f, 1, "shredder"),
+                new UpgradeDefinition("long_reach", "Reach Grabber", "Work from 1 metre farther away.", UpgradeKind.LongReach, 30, 1.6f, 2),
+                new UpgradeDefinition("task_marker", "Two-Way Radio", "Beacons show where your tasks are.", UpgradeKind.TaskMarker, 30, 1f, 1),
+                new UpgradeDefinition("morning_briefing", "Day Planner", "See tomorrow's list before you sleep.", UpgradeKind.MorningBriefing, 25, 1f, 1),
+                new UpgradeDefinition("coin_magnet", "Magnetic Pouch", "Coins find you from farther away.", UpgradeKind.CoinMagnet, 25, 1.6f, 2),
+                new UpgradeDefinition("longer_day", "Overtime Slip", "+15 seconds on the clock.", UpgradeKind.LongerDay, 40, 1.6f, 3),
+                new UpgradeDefinition("tidy_habits", "Label Maker", "Each finished task adds 3 seconds to the clock.", UpgradeKind.TidyHabits, 70, 1f, 1),
+
+                // Service contracts: the building does one task for you every day (pays coins, does not count toward rank).
+                new UpgradeDefinition("auto_coffee", "Coffee Subscription", "Coffee is restocked for you every day.", UpgradeKind.Automation, 90, 1f, 1, "coffee", UpgradeCategory.Contracts),
+                new UpgradeDefinition("auto_printer", "Printer Service Contract", "The printer is loaded for you every day.", UpgradeKind.Automation, 100, 1f, 1, "printer", UpgradeCategory.Contracts),
+                new UpgradeDefinition("auto_shredder", "Shredder Schedule", "The shredder empties itself every day.", UpgradeKind.Automation, 90, 1f, 1, "shredder", UpgradeCategory.Contracts),
+
+                // Tools for jobs deeper in the building. Listed so the player can see what is coming; not buyable yet.
+                new UpgradeDefinition("flashlight", "Flashlight", "For dark corridors and cable trays.", UpgradeKind.FutureTool, 60, 1f, 1, null, UpgradeCategory.Later, 1, false),
+                new UpgradeDefinition("staff_keycard", "Staff Keycard", "Opens staff-only doors.", UpgradeKind.FutureTool, 80, 1f, 1, null, UpgradeCategory.Later, 1, false),
+                new UpgradeDefinition("anti_static_strap", "Anti-Static Strap", "Required before touching server hardware.", UpgradeKind.FutureTool, 70, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                new UpgradeDefinition("cable_tester", "Cable Tester", "Finds the one bad cable in a hundred.", UpgradeKind.FutureTool, 90, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                new UpgradeDefinition("crash_cart", "Crash Cart", "Carry five things at once.", UpgradeKind.FutureTool, 140, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                new UpgradeDefinition("step_ladder", "Step Ladder", "For high shelves and ceiling panels.", UpgradeKind.FutureTool, 90, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                new UpgradeDefinition("thermal_camera", "Thermal Camera", "Find the racks that are running hot.", UpgradeKind.FutureTool, 150, 1f, 1, null, UpgradeCategory.Later, 2, false),
+                new UpgradeDefinition("fire_extinguisher", "Fire Extinguisher", "Because it is a data center.", UpgradeKind.FutureTool, 60, 1f, 1, null, UpgradeCategory.Later, 2, false),
             });
         }
     }
@@ -136,11 +172,12 @@ namespace Noted.Core
         public readonly float SpeedMultiplier;
         public readonly float ReachBonus;
         public readonly float MagnetRadius;
+        public readonly int CarryBonus;
         public readonly bool MarkerEnabled;
         public readonly bool BriefingEnabled;
         public readonly IReadOnlyCollection<string> AutomatedTaskIds;
 
-        public Modifiers(float dayBonus, float perTask, float hold, float speed, float reach, float magnet, bool marker, bool briefing, IReadOnlyCollection<string> automated)
+        public Modifiers(float dayBonus, float perTask, float hold, float speed, float reach, float magnet, int carry, bool marker, bool briefing, IReadOnlyCollection<string> automated)
         {
             DayBonusSeconds = dayBonus;
             SecondsPerTask = perTask;
@@ -148,6 +185,7 @@ namespace Noted.Core
             SpeedMultiplier = speed;
             ReachBonus = reach;
             MagnetRadius = magnet;
+            CarryBonus = carry;
             MarkerEnabled = marker;
             BriefingEnabled = briefing;
             AutomatedTaskIds = automated;
@@ -168,6 +206,9 @@ namespace Noted.Core
 
         public bool IsMaxed(UpgradeDefinition def) => Level(def.Id) >= def.MaxLevel;
 
+        /// <summary>Whether the tool can be bought at this rank. Tools for jobs not yet in the game never can.</summary>
+        public bool IsUnlocked(UpgradeDefinition def, int rank) => def.Available && rank >= def.MinRank;
+
         /// <summary>Cost of the next level, or -1 when maxed.</summary>
         public int CostFor(UpgradeDefinition def)
         {
@@ -176,8 +217,9 @@ namespace Noted.Core
             return (int)Math.Round(def.BaseCost * Math.Pow(def.CostGrowth, level));
         }
 
-        public bool TryBuy(Wallet wallet, UpgradeDefinition def)
+        public bool TryBuy(Wallet wallet, UpgradeDefinition def, int rank = int.MaxValue)
         {
+            if (!IsUnlocked(def, rank)) return false;
             int cost = CostFor(def);
             if (cost < 0) return false;
             if (!wallet.TrySpend(cost)) return false;
@@ -194,12 +236,13 @@ namespace Noted.Core
             if (rank >= 2) speed *= 1f + config.ShoesSpeedBonus;
             float reach = 1f * Level("long_reach");
             float magnet = 2.5f * Level("coin_magnet");
+            int carry = 2 * Level("hand_cart");
             var automated = new List<string>();
             foreach (var def in catalog.All)
             {
                 if (def.Kind == UpgradeKind.Automation && Level(def.Id) > 0) automated.Add(def.AutomatedTaskId);
             }
-            return new Modifiers(dayBonus, perTask, hold, speed, reach, magnet,
+            return new Modifiers(dayBonus, perTask, hold, speed, reach, magnet, carry,
                 Level("task_marker") > 0, Level("morning_briefing") > 0, automated);
         }
     }

@@ -34,6 +34,16 @@ namespace Noted.Core
             return pitchDegrees;
         }
 
+        /// <summary>
+        /// Applies a vertical mouse movement to the pitch. Pitch is positive when looking down, so moving the mouse up (positive
+        /// delta) looks up when not inverted and looks down when inverted. The result is clamped to the pitch limit.
+        /// </summary>
+        public static float ApplyPitch(float pitchDegrees, float deltaYDegrees, bool invertY, float limitDegrees)
+        {
+            float next = pitchDegrees + (invertY ? deltaYDegrees : -deltaYDegrees);
+            return ClampPitch(next, limitDegrees);
+        }
+
         /// <summary>Wraps a yaw angle in degrees into [0, 360).</summary>
         public static float WrapYaw(float yawDegrees)
         {

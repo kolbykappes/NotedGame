@@ -73,7 +73,7 @@ namespace Noted.Game
                 : value * (stickDegreesPerSecond * Time.deltaTime);
 
             transform.Rotate(0f, degrees.x, 0f, Space.Self);
-            pitch = FirstPersonMath.ClampPitch(pitch + (invertY ? degrees.y : -degrees.y), pitchLimit);
+            pitch = FirstPersonMath.ApplyPitch(pitch, degrees.y, invertY, pitchLimit);
             playerCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 

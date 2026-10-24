@@ -8,7 +8,10 @@ namespace Noted.Core
         public float DayLengthSeconds = 60f;
 
         /// <summary>Multiplies every task hold time. One knob for how tight the day feels.</summary>
-        public float TaskHoldScale = 1.5f;
+        public float TaskHoldScale = 1f;
+
+        /// <summary>How many things the player can carry at once before buying a cart.</summary>
+        public int BaseCarryCapacity = 1;
 
         /// <summary>Uptime paid for each task finished before the timer ends.</summary>
         public int CoinsPerTask = 10;

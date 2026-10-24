@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Noted.Core
 {
-    /// <summary>One thing to do at one station: hold for a time, optionally needing or giving a carried item.</summary>
+    /// <summary>One thing to do at one station: a short hold, optionally taking or needing a carried item.</summary>
     public sealed class TaskStep
     {
         public readonly string StationId;
@@ -94,28 +94,34 @@ namespace Noted.Core
             return null;
         }
 
-        /// <summary>The five starter tasks. Hold times are deliberately long so a 60 s day cannot hold a whole list at low rank.</summary>
+        /// <summary>
+        /// The five starter tasks. Each is a short fetch quest: pick something up in one room (a second or two),
+        /// carry it across the building, and use it somewhere else (two or three seconds). The walking is the work.
+        /// </summary>
         public static TaskCatalog Default()
         {
             return new TaskCatalog(new[]
             {
-                new TaskDefinition("coffee", "Refill the coffee machine", 0,
-                    "Hold E at the coffee machine in the break room until it is full. Everyone is counting on you, kindly.",
-                    new TaskStep("coffee_machine", 9f, "Refill the coffee machine")),
-                new TaskDefinition("printer", "Clear the printer jam", 0,
-                    "Hold E at the printer in the print room until the jam is cleared. Please do not ask what it was printing.",
-                    new TaskStep("printer", 10f, "Clear the printer jam")),
-                new TaskDefinition("shredder", "Empty the shredder bin", 0,
-                    "Hold E at the shredder bin in the utility room at the far end of the corridor until it is empty. The bin fills faster than expected.",
-                    new TaskStep("shredder", 8f, "Empty the shredder bin")),
+                new TaskDefinition("coffee", "Restock the coffee", 0,
+                    "Two steps. Take a sack of coffee beans from the storeroom at the far end of the corridor (the utility room), then carry it to the coffee machine in the break room.",
+                    new TaskStep("bean_sack", 1f, "Take the bean sack", null, "beans"),
+                    new TaskStep("coffee_machine", 2f, "Refill the coffee machine", "beans", null)),
+                new TaskDefinition("printer", "Load the printer paper", 0,
+                    "Two steps. Take a ream of paper from the supply stack in the office, then carry it to the printer in the print room.",
+                    new TaskStep("paper_stack", 1f, "Take a ream of paper", null, "paper"),
+                    new TaskStep("printer", 2.5f, "Load the paper and clear the jam", "paper", null)),
+                new TaskDefinition("shredder", "Empty the shredder", 0,
+                    "Two steps. Pull the full bag from the shredder in the print room, then carry it to the dumpster in the utility room at the far end of the corridor.",
+                    new TaskStep("shredder", 1.5f, "Pull the full shred bag", null, "bag"),
+                    new TaskStep("dumpster", 2f, "Throw the bag in the dumpster", "bag", null)),
                 new TaskDefinition("filter", "Swap the air filter", 1,
-                    "Two steps. Hold E at the supply shelf to take a clean filter. Then hold E at the vent at the far end of the corridor to install it.",
-                    new TaskStep("filter_shelf", 3f, "Take a clean filter", null, "filter"),
-                    new TaskStep("vent", 9f, "Install the air filter", "filter", null)),
+                    "Two steps. Take a clean filter from the supply shelf in the break room, then carry it to the vent at the east end of the corridor and install it.",
+                    new TaskStep("filter_shelf", 1f, "Take a clean filter", null, "filter"),
+                    new TaskStep("vent", 3f, "Install the air filter", "filter", null)),
                 new TaskDefinition("temperature", "Log the temperature", 1,
-                    "Two steps. Hold E at the thermostat by the server hall window to read it. Then hold E at the clipboard in the office to write the number down.",
-                    new TaskStep("thermostat", 4f, "Read the thermostat", null, "reading"),
-                    new TaskStep("clipboard", 6f, "Write the number on the clipboard", "reading", null)),
+                    "Two steps. Read the thermostat by the server hall window, then carry the number to the clipboard in the office and write it down.",
+                    new TaskStep("thermostat", 1.5f, "Read the thermostat", null, "reading"),
+                    new TaskStep("clipboard", 2f, "Write the number on the clipboard", "reading", null)),
             });
         }
     }

@@ -15,12 +15,16 @@ namespace Noted.Game
         [SerializeField] float markerNearDistance = 7f;
 
         bool active;
+        bool blocked;
 
         public string StationId => stationId;
         public Vector3 CoinOrigin => coinOrigin != null ? coinOrigin.position : transform.position + Vector3.up * 1.2f;
 
+        public override bool IsBlocked => blocked;
+
         public override bool TryGetPrompt(out string prompt, out float holdSeconds)
         {
+            blocked = false;
             prompt = null;
             holdSeconds = 0f;
             var session = flow != null ? flow.Session : null;
@@ -30,6 +34,13 @@ namespace Noted.Game
             {
                 holdSeconds = step.HoldSeconds * session.Config.TaskHoldScale * session.Mods.HoldMultiplier;
                 prompt = "Hold E: " + step.Prompt;
+                return true;
+            }
+
+            if (session.IsHandsFullAt(stationId))
+            {
+                blocked = true;
+                prompt = "Hands full. Deliver what you are carrying first.";
                 return true;
             }
             return false;

@@ -8,6 +8,7 @@ namespace Noted.Game
     public enum FlowPhase
     {
         Boot,
+        Setup,
         Intro,
         HowTo,
         Day,
@@ -32,6 +33,7 @@ namespace Noted.Game
 
         [Header("Screens and systems")]
         [SerializeField] Hud hud;
+        [SerializeField] SetupScreen setup;
         [SerializeField] CardScreen cards;
         [SerializeField] ComplaintScreen complaint;
         [SerializeField] ShopScreen shop;
@@ -76,8 +78,15 @@ namespace Noted.Game
             motor.TeleportTo(wakePoint.position, wakePoint.eulerAngles.y);
             look.ResetPitch();
 
+            // The setup menu comes first (invert mouse, sensitivity, field of view), then the intro card.
+            Phase = FlowPhase.Setup;
+            setup.Show(look, ShowIntro);
+        }
+
+        void ShowIntro()
+        {
             Phase = FlowPhase.Intro;
-            cards.Show("THE SOLACE INITIATIVE", CardText.Intro(config, Session.Code), "Begin my first day", BeginDayFlow);
+            cards.Show("THE SOLACE INITIATIVE", CardText.Intro(Session.Config, Session.Code), "Begin my first day", BeginDayFlow);
         }
 
         void Update()
@@ -284,13 +293,40 @@ namespace Noted.Game
                 : "";
             hud.SetStatus(Session.Wallet.Balance, Session.Config.TitleFor(rank), progress);
             hud.SetTasks(Session.TodaysTasks);
-            hud.SetCarrying(Session.Carrying == null ? "" : "Carrying: " + CarryName(Session.Carrying));
+            hud.SetCarrying(CarryText());
+            hud.SetTools(ToolsText());
+        }
+
+        string CarryText()
+        {
+            int capacity = Session.CarryCapacity;
+            if (Session.Carried.Count == 0 && capacity <= 1) return "";
+            var names = new List<string>();
+            foreach (var token in Session.Carried) names.Add(CarryName(token));
+            string list = names.Count > 0 ? ": " + string.Join(", ", names) : "";
+            return "Carrying " + Session.Carried.Count + "/" + capacity + list;
+        }
+
+        string ToolsText()
+        {
+            var names = new List<string>();
+            foreach (var def in Session.Upgrades.All)
+            {
+                if (def.Category == UpgradeCategory.Later) continue;
+                int level = Session.Ledger.Level(def.Id);
+                if (level <= 0) continue;
+                names.Add(def.MaxLevel > 1 ? def.Name + " x" + level : def.Name);
+            }
+            return names.Count == 0 ? "TOOLS: none yet" : "TOOLS: " + string.Join(", ", names);
         }
 
         static string CarryName(string token)
         {
             switch (token)
             {
+                case "beans": return "bean sack";
+                case "paper": return "ream of paper";
+                case "bag": return "shred bag";
                 case "filter": return "air filter";
                 case "reading": return "temperature reading";
                 default: return token;

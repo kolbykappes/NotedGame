@@ -17,6 +17,8 @@ namespace Noted.Game
         [SerializeField] RectTransform tasksBack;
         [SerializeField] Text promptText;
         [SerializeField] Text carryText;
+        [SerializeField] Text toolsText;
+        [SerializeField] RectTransform toolsBack;
         [SerializeField] Text toastText;
         [SerializeField] Image progressFill;
         [SerializeField] GameObject progressRoot;
@@ -46,6 +48,12 @@ namespace Noted.Game
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -52), new Vector2(-28, -22));
             rankText = UiKit.Label(r, "Rank", "Trainee", 22, UiKit.Cream, TextAnchor.UpperRight,
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -92), new Vector2(-28, -56));
+
+            // Tools owned (under the status panel)
+            toolsBack = UiKit.Panel(r, "ToolsBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -214), new Vector2(-16, -108)).rectTransform;
+            toolsText = UiKit.Label(r, "Tools", "TOOLS: none yet", 20, UiKit.Cream, TextAnchor.UpperRight,
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322, -208), new Vector2(-24, -114));
 
             // Task list (top left)
             tasksBack = UiKit.Panel(r, "TasksBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
@@ -137,6 +145,13 @@ namespace Noted.Game
                 rt.anchorMax = new Vector2(Mathf.Clamp01(progress01), 1f);
                 rt.offsetMax = new Vector2(-3f, -3f);
             }
+        }
+
+        public void SetTools(string text)
+        {
+            toolsText.text = text;
+            Canvas.ForceUpdateCanvases();
+            if (toolsBack != null) toolsBack.offsetMin = new Vector2(-330f, -(108f + Mathf.Clamp(toolsText.preferredHeight + 18f, 36f, 200f)));
         }
 
         public void SetCarrying(string text)

@@ -18,6 +18,9 @@ namespace Noted.Game
         Collider currentCollider;
         float held;
 
+        /// <summary>Test hook: when true, E counts as held even with no key down (used when keyboard devices are disabled in the background).</summary>
+        public bool SimulateInteractHeld { get; set; }
+
         public float RangeBonus { get; set; }
         public bool HasTarget { get; private set; }
         public string Prompt { get; private set; }
@@ -76,6 +79,13 @@ namespace Noted.Game
             HasTarget = true;
             Prompt = prompt;
 
+            if (target.IsBlocked)
+            {
+                Progress01 = 0f;
+                held = 0f;
+                return;
+            }
+
             if (hold <= 0f)
             {
                 Progress01 = 0f;
@@ -83,7 +93,7 @@ namespace Noted.Game
                 return;
             }
 
-            if (interact.IsPressed())
+            if (interact.IsPressed() || SimulateInteractHeld)
             {
                 held += Time.deltaTime;
                 Progress01 = Mathf.Clamp01(held / hold);

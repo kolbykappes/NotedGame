@@ -49,13 +49,15 @@ namespace Noted.Core
         readonly int seed;
         readonly HashSet<string> seen = new HashSet<string>();
         readonly List<TaskInstance> today = new List<TaskInstance>();
+        readonly List<string> carried = new List<string>();
         int coinsOutstanding;
         int coinsEarnedToday;
 
         public int Day { get; private set; }
         public string Code { get; }
         public DayClock Clock { get; private set; }
-        public string Carrying { get; private set; }
+        /// <summary>Items being carried right now (a bean sack, a filter...), up to the carry capacity.</summary>
+        public IReadOnlyList<string> Carried => carried;
         public IReadOnlyList<TaskInstance> TodaysTasks => today;
 
         public GameSession(GameConfig config, int randomSeed)
@@ -69,6 +71,9 @@ namespace Noted.Core
             Code = CodeGenerator.Generate(randomSeed);
         }
 
+        public int CarryCapacity => Config.BaseCarryCapacity + Mods.CarryBonus;
+        public bool IsCarrying(string token) => carried.Contains(token);
+
         public int CurrentRank => Rank.Rank;
         public Modifiers Mods => Ledger.Compute(Config, Rank.Rank);
         public int CoinsOutstanding => coinsOutstanding;
@@ -80,7 +85,7 @@ namespace Noted.Core
         {
             Day++;
             coinsEarnedToday = 0;
-            Carrying = null;
+            carried.Clear();
             var mods = Mods;
             today.Clear();
             today.AddRange(DayPlanner.Plan(Config, Tasks, Rank.Rank, seen, new HashSet<string>(mods.AutomatedTaskIds), DaySeed(Day)));
@@ -128,7 +133,8 @@ namespace Noted.Core
                 if (t.IsFinished) continue;
                 var s = t.CurrentStep;
                 if (s.StationId != stationId) continue;
-                if (s.RequiresCarry != null && s.RequiresCarry != Carrying) continue;
+                if (s.RequiresCarry != null && !carried.Contains(s.RequiresCarry)) continue;
+                if (s.GivesCarry != null && carried.Count >= CarryCapacity) continue;
                 task = t;
                 step = s;
                 return true;
@@ -138,20 +144,15 @@ namespace Noted.Core
             return false;
         }
 
-        /// <summary>True when an unfinished step is at this station but the player lacks what it needs.</summary>
-        public bool IsBlockedByCarry(string stationId, out string needs)
+        /// <summary>True when the step at this station would hand the player something but their hands are full.</summary>
+        public bool IsHandsFullAt(string stationId)
         {
             foreach (var t in today)
             {
                 if (t.IsFinished) continue;
                 var s = t.CurrentStep;
-                if (s.StationId == stationId && s.RequiresCarry != null && s.RequiresCarry != Carrying)
-                {
-                    needs = s.RequiresCarry;
-                    return true;
-                }
+                if (s.StationId == stationId && s.GivesCarry != null && carried.Count >= CarryCapacity) return true;
             }
-            needs = null;
             return false;
         }
 
@@ -161,8 +162,8 @@ namespace Noted.Core
             if (Clock == null || Clock.Expired) return new StepResult(false, false, 0, null);
             if (!TryGetAvailableStep(stationId, out var task, out var step)) return new StepResult(false, false, 0, null);
 
-            if (step.RequiresCarry != null) Carrying = null;
-            if (step.GivesCarry != null) Carrying = step.GivesCarry;
+            if (step.RequiresCarry != null) carried.Remove(step.RequiresCarry);
+            if (step.GivesCarry != null) carried.Add(step.GivesCarry);
 
             bool done = task.AdvanceStep();
             int coins = 0;
@@ -198,7 +199,7 @@ namespace Noted.Core
         /// <summary>Ends the day: pays automated tasks, counts completions and records rank progress.</summary>
         public DaySummary EndDay()
         {
-            Carrying = null;
+            carried.Clear();
             var summary = new DaySummary { Day = Day, TasksOnList = today.Count };
             foreach (var t in today)
             {

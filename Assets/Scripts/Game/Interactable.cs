@@ -9,5 +9,8 @@ namespace Noted.Game
         public abstract bool TryGetPrompt(out string prompt, out float holdSeconds);
 
         public abstract void Complete();
+
+        /// <summary>True when the prompt is shown as information only (for example "hands full") and cannot be completed.</summary>
+        public virtual bool IsBlocked => false;
     }
 }

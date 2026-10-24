@@ -69,6 +69,28 @@ namespace Noted.Core.Tests
             Assert.AreEqual(expected, FirstPersonMath.ClampPitch(pitch, limit), Tolerance);
         }
 
+        [Test]
+        public void ApplyPitch_MouseUpLooksUp_WhenNotInverted()
+        {
+            // Pitch is positive when looking down, so looking up means the pitch goes down.
+            Assert.AreEqual(-5f, FirstPersonMath.ApplyPitch(0f, 5f, false, 85f), Tolerance);
+            Assert.AreEqual(5f, FirstPersonMath.ApplyPitch(0f, -5f, false, 85f), Tolerance);
+        }
+
+        [Test]
+        public void ApplyPitch_MouseUpLooksDown_WhenInverted()
+        {
+            Assert.AreEqual(5f, FirstPersonMath.ApplyPitch(0f, 5f, true, 85f), Tolerance);
+            Assert.AreEqual(-5f, FirstPersonMath.ApplyPitch(0f, -5f, true, 85f), Tolerance);
+        }
+
+        [Test]
+        public void ApplyPitch_StaysWithinTheLimit_BothWays()
+        {
+            Assert.AreEqual(-85f, FirstPersonMath.ApplyPitch(-80f, 30f, false, 85f), Tolerance);
+            Assert.AreEqual(85f, FirstPersonMath.ApplyPitch(80f, 30f, true, 85f), Tolerance);
+        }
+
         [TestCase(0f, 0f)]
         [TestCase(360f, 0f)]
         [TestCase(-90f, 270f)]

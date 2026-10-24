@@ -106,13 +106,13 @@ namespace Noted.Core.Tests
             Assert.IsTrue(s.TryGetAvailableStep("filter_shelf", out _, out _), "the shelf step is available first");
 
             Assert.IsTrue(s.CompleteStep("filter_shelf").Accepted);
-            Assert.AreEqual("filter", s.Carrying);
+            CollectionAssert.AreEqual(new[] { "filter" }, s.Carried);
             Assert.IsFalse(s.TryGetAvailableStep("filter_shelf", out _, out _), "the shelf step is done");
             Assert.IsTrue(s.TryGetAvailableStep("vent", out _, out _));
 
             var done = s.CompleteStep("vent");
             Assert.IsTrue(done.TaskDone);
-            Assert.IsNull(s.Carrying);
+            Assert.AreEqual(0, s.Carried.Count);
         }
 
         [Test]
@@ -211,6 +211,84 @@ namespace Noted.Core.Tests
                 var ids = list.Select(t => t.Definition.Id).ToList();
                 Assert.IsTrue(ids.Contains("filter") && ids.Contains("temperature"), "seed " + seed);
             }
+        }
+
+        [Test]
+        public void EveryStarterTask_IsAShortFetchQuest()
+        {
+            var tasks = TaskCatalog.Default();
+            foreach (var t in tasks.All)
+            {
+                Assert.AreEqual(2, t.Steps.Count, t.Id + " should be pick up, then deliver");
+                Assert.IsNotNull(t.Steps[0].GivesCarry, t.Id);
+                Assert.AreEqual(t.Steps[0].GivesCarry, t.Steps[1].RequiresCarry, t.Id);
+                foreach (var step in t.Steps) Assert.LessOrEqual(step.HoldSeconds, 3f, t.Id + " hold is too long to stand and wait");
+            }
+        }
+
+        [Test]
+        public void CarryCapacity_OfOne_MakesYouDeliverBeforeFetchingAgain()
+        {
+            var s = NewSession();
+            s.BeginDayWith(new[] { new TaskInstance(s.Tasks.Find("coffee")), new TaskInstance(s.Tasks.Find("printer")) });
+            Assert.AreEqual(1, s.CarryCapacity);
+
+            Assert.IsTrue(s.CompleteStep("bean_sack").Accepted);
+            Assert.IsFalse(s.TryGetAvailableStep("paper_stack", out _, out _), "hands are full");
+            Assert.IsTrue(s.IsHandsFullAt("paper_stack"));
+            Assert.IsFalse(s.CompleteStep("paper_stack").Accepted);
+
+            Assert.IsTrue(s.CompleteStep("coffee_machine").TaskDone);
+            Assert.IsFalse(s.IsHandsFullAt("paper_stack"));
+            Assert.IsTrue(s.CompleteStep("paper_stack").Accepted);
+        }
+
+        [Test]
+        public void HandCart_LetsYouCarryThreeThings()
+        {
+            var s = NewSession();
+            s.Wallet.Add(500);
+            Assert.IsTrue(s.Ledger.TryBuy(s.Wallet, s.Upgrades.Find("hand_cart")));
+            Assert.AreEqual(3, s.CarryCapacity);
+            s.BeginDayWith(new[]
+            {
+                new TaskInstance(s.Tasks.Find("coffee")),
+                new TaskInstance(s.Tasks.Find("printer")),
+                new TaskInstance(s.Tasks.Find("shredder")),
+            });
+            Assert.IsTrue(s.CompleteStep("bean_sack").Accepted);
+            Assert.IsTrue(s.CompleteStep("paper_stack").Accepted);
+            Assert.IsTrue(s.CompleteStep("shredder").Accepted);
+            Assert.AreEqual(3, s.Carried.Count);
+            Assert.IsTrue(s.IsCarrying("beans") && s.IsCarrying("paper") && s.IsCarrying("bag"));
+            Assert.IsTrue(s.CompleteStep("dumpster").TaskDone);
+            Assert.AreEqual(2, s.Carried.Count);
+        }
+
+        [Test]
+        public void ToolsForLaterJobs_AreListedButCannotBeBought()
+        {
+            var s = NewSession();
+            s.Wallet.Add(5000);
+            foreach (var def in s.Upgrades.All)
+            {
+                if (def.Category != UpgradeCategory.Later) continue;
+                Assert.IsFalse(def.Available, def.Id);
+                Assert.IsFalse(s.Ledger.TryBuy(s.Wallet, def, 2), def.Id + " must not be buyable yet");
+            }
+            Assert.AreEqual(5000, s.Wallet.Balance);
+        }
+
+        [Test]
+        public void RankGatedTools_NeedTheRank()
+        {
+            var cat = UpgradeCatalog.Default();
+            var ledger = new UpgradeLedger(cat);
+            var gated = new UpgradeDefinition("test_tool", "Test", "x", UpgradeKind.RunningShoes, 10, 1f, 1, null, UpgradeCategory.Tools, 2, true);
+            var w = new Wallet();
+            w.Add(100);
+            Assert.IsFalse(ledger.TryBuy(w, gated, 1));
+            Assert.IsTrue(ledger.TryBuy(w, gated, 2));
         }
     }
 }

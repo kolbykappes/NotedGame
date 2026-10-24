@@ -121,7 +121,7 @@ namespace Noted.EditorTools
             Set(pull, "sfx", sfx);
 
             // UI
-            var canvas = BuildCanvas(out var hud, out var cards, out var complaint, out var shop);
+            var canvas = BuildCanvas(out var hud, out var cards, out var complaint, out var shop, out var setup);
 
             // Wire stations and interactables to the flow.
             foreach (var s in stations) Set(s, "flow", flow);
@@ -136,6 +136,7 @@ namespace Noted.EditorTools
             Set(flow, "cards", cards);
             Set(flow, "complaint", complaint);
             Set(flow, "shop", shop);
+            Set(flow, "setup", setup);
             Set(flow, "coins", spawner);
             Set(flow, "lighting", lighting);
             Set(flow, "pull", pull);
@@ -258,10 +259,10 @@ namespace Noted.EditorTools
             cot = cotBody.AddComponent<CotInteractable>();
 
             // Console desk on the north wall, with a monitor showing the code entry text.
-            Box(rProps, "ConsoleDesk", new Vector3(-25f, 0.5f, 13.4f), new Vector3(2.2f, 1.0f, 0.9f), mBeige);
-            Box(rProps, "ConsoleMonitor", new Vector3(-25f, 1.45f, 13.55f), new Vector3(1.3f, 0.8f, 0.12f), mNavy);
-            Box(rProps, "ConsoleScreenGlow", new Vector3(-25f, 1.45f, 13.47f), new Vector3(1.15f, 0.65f, 0.02f), mScreen, false);
-            consoleScreen = Sign(rProps, "ConsoleText", "ENTER CODE\n> ", new Vector3(-25.5f, 1.65f, 13.44f), 0f, 0.045f, 36, Cream, TextAnchor.UpperLeft);
+            Box(rProps, "ConsoleDesk", new Vector3(-25f, 0.5f, 13.4f), new Vector3(2.6f, 1.0f, 0.9f), mBeige);
+            Box(rProps, "ConsoleMonitor", new Vector3(-25f, 1.75f, 13.55f), new Vector3(2.4f, 1.3f, 0.12f), mNavy);
+            Box(rProps, "ConsoleScreenGlow", new Vector3(-25f, 1.75f, 13.47f), new Vector3(2.25f, 1.15f, 0.02f), mScreen, false);
+            consoleScreen = Sign(rProps, "ConsoleText", "ENTER CODE\n> ", new Vector3(-26.0f, 2.2f, 13.44f), 0f, 0.07f, 37, Cream, TextAnchor.UpperLeft);
 
             // Complaint terminal on the east wall of the admin room, always brightly lit.
             Box(rProps, "TerminalDesk", new Vector3(-20.6f, 0.45f, 7f), new Vector3(0.7f, 0.9f, 1.5f), mBeige);
@@ -271,10 +272,13 @@ namespace Noted.EditorTools
             terminal = monitor.AddComponent<TerminalInteractable>();
 
             // Signs and decor.
-            Sign(rSigns, "SignInitiative", "THE SOLACE INITIATIVE", new Vector3(-27.3f, 2.55f, 13.88f), 0f, 0.07f, 48, Cream, TextAnchor.UpperLeft);
-            Sign(rSigns, "SignSlogan", "Comfort Is Our Output", new Vector3(-27.0f, 2.1f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignInitiative", "THE SOLACE INITIATIVE", new Vector3(-29.6f, 3.0f, 13.88f), 0f, 0.07f, 48, Cream, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignSlogan", "Comfort Is Our Output", new Vector3(-29.6f, 2.62f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Sign(rSigns, "SignAdminDoor", "ADMINISTRATION", new Vector3(-26.7f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Box(rProps, "AdminRug", new Vector3(-25f, 0.01f, 8f), new Vector3(5f, 0.02f, 3f), mNavy, false);
+            Box(rProps, "ToolLocker", new Vector3(-29.5f, 1.0f, 6.4f), new Vector3(0.6f, 2.0f, 1.8f), mDoor);
+            Sign(rSigns, "SignLocker", "TOOL LOCKER", new Vector3(-29.18f, 1.9f, 5.7f), -90f, 0.045f, 40, Yellow, TextAnchor.UpperLeft);
+            Sign(rSigns, "SignLockerHint", "Open at night", new Vector3(-29.18f, 1.6f, 5.7f), -90f, 0.035f, 36, Cream, TextAnchor.UpperLeft);
 
             wake = new GameObject("WakePoint").transform;
             wake.SetParent(rSystems, false);
@@ -311,6 +315,8 @@ namespace Noted.EditorTools
             Sign(rSigns, "SignPrint", "PRINT ROOM", new Vector3(-1.8f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Station("Printer", "printer", new Vector3(6.6f, 0.5f, 13.3f), new Vector3(1.5f, 1.0f, 0.9f), mBeige);
             Sign(rSigns, "SignPrinter", "PRINTER", new Vector3(6.0f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("ShredderBin", "shredder", new Vector3(-6.6f, 0.45f, 13.3f), new Vector3(0.8f, 0.9f, 0.7f), mDark);
+            Sign(rSigns, "SignShredder", "SHREDDER", new Vector3(-7.3f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Box(rProps, "PrintTable", new Vector3(0f, 0.4f, 8f), new Vector3(3f, 0.8f, 1.2f), mWood);
             Plant(new Vector3(-7f, 0f, 3.2f));
         }
@@ -321,6 +327,8 @@ namespace Noted.EditorTools
             Box(rProps, "ClipboardDesk", new Vector3(18.2f, 0.45f, 13.3f), new Vector3(2.2f, 0.9f, 0.9f), mWood);
             Station("Clipboard", "clipboard", new Vector3(18.2f, 0.98f, 13.2f), new Vector3(0.5f, 0.12f, 0.65f), mCream);
             Sign(rSigns, "SignClipboard", "LOG BOOK", new Vector3(17.6f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("PaperStack", "paper_stack", new Vector3(9.4f, 0.5f, 13.2f), new Vector3(0.9f, 1.0f, 0.7f), mCream);
+            Sign(rSigns, "SignPaper", "PAPER", new Vector3(9.0f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             for (int i = 0; i < 3; i++)
             {
                 Box(rProps, "OfficeDesk" + i, new Vector3(11f + i * 3f, 0.4f, 7f), new Vector3(1.8f, 0.8f, 0.9f), mWood);
@@ -333,8 +341,10 @@ namespace Noted.EditorTools
         {
             Sign(rSigns, "SignUtility", "UTILITY", new Vector3(23.4f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
             Box(rProps, "Boiler", new Vector3(24.5f, 1.1f, 6.5f), new Vector3(2f, 2.2f, 2f), mDark);
-            Station("ShredderBin", "shredder", new Vector3(28.2f, 0.45f, 13.3f), new Vector3(0.8f, 0.9f, 0.7f), mDark);
-            Sign(rSigns, "SignShredder", "SHREDDER", new Vector3(27.5f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("BeanSack", "bean_sack", new Vector3(21.2f, 0.35f, 13.3f), new Vector3(0.8f, 0.7f, 0.6f), mWood);
+            Sign(rSigns, "SignBeans", "COFFEE BEANS", new Vector3(20.5f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            Station("Dumpster", "dumpster", new Vector3(28.4f, 0.7f, 12.7f), new Vector3(1.8f, 1.4f, 1.2f), mDark);
+            Sign(rSigns, "SignDumpster", "DUMPSTER", new Vector3(27.7f, 2.3f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Box(rProps, "Crates", new Vector3(23f, 0.4f, 12.4f), new Vector3(1.6f, 0.8f, 1.2f), mWood);
             Box(rProps, "MopBucket", new Vector3(22.2f, 0.25f, 4f), new Vector3(0.5f, 0.5f, 0.5f), mDark);
 
@@ -438,10 +448,10 @@ namespace Noted.EditorTools
 
             var camGo = new GameObject("PullCamera");
             camGo.transform.SetParent(go.transform, false);
-            camGo.transform.position = new Vector3(-21.2f, 2.8f, 3.4f);
-            camGo.transform.rotation = Quaternion.LookRotation(new Vector3(-26.5f, 1.1f, 11f) - camGo.transform.position);
+            camGo.transform.position = new Vector3(-24.4f, 1.9f, 8.9f);
+            camGo.transform.rotation = Quaternion.LookRotation(new Vector3(-24.9f, 1.55f, 13.5f) - camGo.transform.position);
             var cam = camGo.AddComponent<Camera>();
-            cam.fieldOfView = 62f;
+            cam.fieldOfView = 52f;
             cam.nearClipPlane = 0.05f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.05f, 0.07f, 0.08f);
@@ -469,10 +479,10 @@ namespace Noted.EditorTools
 
             var start = new GameObject("AvatarStart").transform;
             start.SetParent(go.transform, false);
-            start.position = new Vector3(-23.4f, 0.05f, 3.2f);
+            start.position = new Vector3(-21.4f, 0.05f, 11.6f);
             var end = new GameObject("AvatarEnd").transform;
             end.SetParent(go.transform, false);
-            end.position = new Vector3(-23.4f, 0.05f, 12.0f);
+            end.position = new Vector3(-22.9f, 0.05f, 12.3f);
 
             Set(pull, "pullCamera", cam);
             Set(pull, "avatar", avatar.transform);
@@ -485,7 +495,7 @@ namespace Noted.EditorTools
             return go;
         }
 
-        static Canvas BuildCanvas(out Hud hud, out CardScreen cards, out ComplaintScreen complaint, out ShopScreen shop)
+        static Canvas BuildCanvas(out Hud hud, out CardScreen cards, out ComplaintScreen complaint, out ShopScreen shop, out SetupScreen setup)
         {
             var uiRoot = new GameObject("UI");
             var canvasGo = new GameObject("Canvas", typeof(RectTransform));
@@ -507,6 +517,8 @@ namespace Noted.EditorTools
             complaint.Build(canvasGo.transform);
             shop = NewScreen<ShopScreen>(canvasGo.transform, "ShopScreenComponent");
             shop.Build(canvasGo.transform);
+            setup = NewScreen<SetupScreen>(canvasGo.transform, "SetupScreenComponent");
+            setup.Build(canvasGo.transform);
 
             var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule), typeof(UiInputBootstrap));
             es.transform.SetParent(uiRoot.transform, false);
