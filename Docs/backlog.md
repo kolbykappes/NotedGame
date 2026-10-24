@@ -7,7 +7,7 @@ One line per item: status, item, notes.
 - [ ] Click the UI with a real mouse (setup buttons, intro button, a complaint preset, a locker row, Wake Up/Close). Simulated clicks are dropped while the Editor is in the background.
 - [ ] Check the invert-mouse direction with the real mouse (the logic is unit-tested).
 - [ ] Judge the fetch-quest pacing and the closer pull camera.
-- [ ] Decide whether a Trainee day is tight enough (an ideal route needs 40 to 52 s of 60; knob: `TaskHoldScale`).
+- [ ] Decide whether Trainee days are tight enough (ideal route: 34 to 41 s sprinting, 52 to 62 s walking, out of 60; knobs: step hold times, `BaseCarryCapacity`, the building layout).
 - [ ] Tune the guessed numbers: hold times, upgrade costs, rank thresholds, pull timings, lighting fade, sound volumes, FOV, sensitivity.
 
 ## Next slices
@@ -21,7 +21,7 @@ One line per item: status, item, notes.
 - [ ] Replace placeholder avatar, props, sounds and signs; the palette is in `Docs/art/palette.md`.
 - [ ] Save/load (needs a plan first).
 - [ ] Windows build test (`unity build`), since an Editor playtest does not prove a player build (kit rule 31).
-- [ ] Play Mode tests for the flow (the Editor must be focused for frames to advance; kit rule 3a).
+- [ ] Play Mode tests for the flow (frames advance in the background with set_autotick plus run-in-background; see the research note).
 
 ## Done
 - [x] Git repository on `main` with a Unity `.gitignore` (2026-10-24).
