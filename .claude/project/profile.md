@@ -1,0 +1,48 @@
+# Noted project profile
+
+The one place the portable Unity kit looks for project facts. Keep it short and factual; update it when a fact changes.
+
+## Identity
+
+- A first-person Windows game (Steam), one Editor normally open. Working title "Noted: I Understand Your Frustration".
+- Working scenes: `Assets/Scenes/Greybox.unity` (a 20 m room for testing movement; built by `tools/build_greybox.cs`, which refuses to run if the scene exists) and the unused template `Assets/Scenes/SampleScene.unity`.
+- Design docs: `C:\Code\ClickOne\Docs\concept\hold-the-line.md` (concept, six-beat loop spine, candidates) and `C:\Code\ClickOne\Docs\competitive\` (research).
+
+## Versions (re-check if stale)
+
+Unity 6000.6.6f1, URP 17.6.0 (template `com.unity.template.urp-blank`), Input System 1.20.0, uGUI 2.6.0, Test Framework 1.4.6,
+Unity CLI 1.0.0-beta.13, `com.unity.pipeline` 0.8.0-exp.1 (installed 2026-10-24 with `unity pipeline install --package-version 0.8.0-exp.1`, with the owner's approval).
+
+## Paths and layout
+
+- Unity project root: `C:\Code\Noted` (not a git repo yet; it is also the checkout root).
+- Project code: `Assets/Scripts/Core/` (plain C#, no engine references) and `Assets/Scripts/Game/` (MonoBehaviours). Editor tooling: `Assets/Editor/` (not created yet). Scratch scripts: `tools/` (outside `Assets/`). Prefabs: `Assets/Prefabs/`. Tests: `Assets/Tests/EditMode/`.
+- Assembly definitions: `Noted.Core` (no references, `noEngineReferences`; game rules and math), `Noted.Game` (references `Noted.Core` and `Unity.InputSystem`), `Noted.Core.Tests` (Editor-only Edit Mode tests; references `Noted.Core` and the test runner assemblies).
+- Third-party content to leave untouched: `Assets/TutorialInfo/`, `Assets/Readme.asset` (template files; may be deleted with approval).
+
+## Editor settings that matter
+
+- Enter Play Mode options: **domain reload off, scene reload on** (`m_EnterPlayModeOptions: 1`). Kit rule 9 applies: no mutable statics without a reset hook.
+
+## Protected (approval and a stated plan first), beyond the kit defaults
+
+None beyond the kit defaults. The template's `Assets/Settings/` render-pipeline assets are covered by the render-pipeline rule.
+
+## Helpers
+
+None yet (no off-screen render helper, focus probe or measurement scripts).
+
+## Documentation map
+
+| What | Where |
+|---|---|
+| Index | `C:\Code\ClickOne\Docs\concept\README.md` |
+| Build status | `Docs/build-status.md` |
+| Backlog / changelog | `Docs/backlog.md`, `Docs/changelog.md` |
+| **Research folder** (kit "research before craft") | `Docs/research/` (index: `Docs/research/README.md`) |
+| CLI / Pipeline research notes, if any | none |
+
+## Project files in this folder
+
+- `workflow.md`: scope, backlog and changelog duties, other doc duties.
+- `lessons.md`: verified project-specific traps; project triage of the kit's cold-tier notes.
