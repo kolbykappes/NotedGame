@@ -113,7 +113,12 @@ namespace Noted.EditorTools
             Set(lighting, "sun", sun);
             SetArray(lighting, "officeLights", officeLights.ToArray());
 
+            var sfxGo = new GameObject("Sfx");
+            sfxGo.transform.SetParent(rSystems, false);
+            var sfx = sfxGo.AddComponent<Sfx>();
+
             var pullGo = BuildPullRig(consoleScreen, out var pull);
+            Set(pull, "sfx", sfx);
 
             // UI
             var canvas = BuildCanvas(out var hud, out var cards, out var complaint, out var shop);
@@ -134,6 +139,7 @@ namespace Noted.EditorTools
             Set(flow, "coins", spawner);
             Set(flow, "lighting", lighting);
             Set(flow, "pull", pull);
+            Set(flow, "sfx", sfx);
             Set(flow, "wakePoint", wake);
             Set(flow, "consoleStandPoint", stand);
 

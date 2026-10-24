@@ -38,6 +38,7 @@ namespace Noted.Game
         [SerializeField] CoinSpawner coins;
         [SerializeField] LightingController lighting;
         [SerializeField] PullSequence pull;
+        [SerializeField] Sfx sfx;
 
         [Header("Places")]
         [SerializeField] Transform wakePoint;
@@ -134,6 +135,7 @@ namespace Noted.Game
             hud.SetTimer(Session.Clock.Remaining);
             RefreshHud();
             hud.Toast("Day " + Session.Day, 2.5f);
+            Beep(SfxId.Wake);
         }
 
         void ApplyModifiers()
@@ -151,6 +153,7 @@ namespace Noted.Game
             SetControls(false);
             hud.SetPrompt(false, "", 0f);
             hud.Toast(CardText.Pull(), 3.5f);
+            Beep(SfxId.PullStart);
             playerCamera.enabled = false;
             pull.Play(Session.Code, Session.CurrentRank, OnPullFinished);
         }
@@ -182,10 +185,12 @@ namespace Noted.Game
             {
                 coins.Spawn(station.CoinOrigin, result.CoinsToSpawn, Session.Config.CoinPickupsPerTask);
                 hud.Toast("Done: " + result.Task.Definition.Name, 2.5f);
+                Beep(SfxId.TaskDone);
             }
             else
             {
                 hud.Toast("Step done. " + (result.Task.CurrentStep != null ? "Next: " + result.Task.CurrentStep.Prompt : ""), 3f);
+                Beep(SfxId.StepDone);
             }
             RefreshHud();
         }
@@ -193,6 +198,7 @@ namespace Noted.Game
         public void CollectCoin(CoinPickup coin)
         {
             Session.CollectCoins(coin.Value);
+            Beep(SfxId.Coin, UnityEngine.Random.Range(0.92f, 1.18f));
             coins.Forget(coin);
             Destroy(coin.gameObject);
             RefreshHud();
@@ -207,7 +213,11 @@ namespace Noted.Game
             Phase = FlowPhase.Complaint;
             SetControls(false);
             hud.SetPrompt(false, "", 0f);
-            complaint.Show(index => Session.Complaints.PickReply(Session.CurrentRank, complaintRng), null, CloseComplaint);
+            complaint.Show(index =>
+            {
+                Beep(SfxId.Reply);
+                return Session.Complaints.PickReply(Session.CurrentRank, complaintRng);
+            }, null, CloseComplaint);
         }
 
         void CloseComplaint()
@@ -221,6 +231,7 @@ namespace Noted.Game
         public void Sleep()
         {
             if (Phase != FlowPhase.Quiet) return;
+            Beep(SfxId.Sleep);
             SetControls(false);
             hud.SetPrompt(false, "", 0f);
             Session.CollectAllOutstanding();
@@ -245,12 +256,18 @@ namespace Noted.Game
             Phase = FlowPhase.Shop;
             shop.Show(Session, BeginDayFlow, () =>
             {
+                Beep(SfxId.Buy);
                 ApplyModifiers();
                 RefreshHud();
             });
         }
 
         // ---- Helpers ----
+
+        void Beep(SfxId id, float pitch = 1f)
+        {
+            if (sfx != null) sfx.Play(id, pitch);
+        }
 
         void SetControls(bool on)
         {

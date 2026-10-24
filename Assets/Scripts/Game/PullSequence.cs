@@ -20,6 +20,7 @@ namespace Noted.Game
         [SerializeField] Transform avatarStart;
         [SerializeField] Transform avatarEnd;
         [SerializeField] UnityEngine.UI.Text consoleScreen;
+        [SerializeField] Sfx sfx;
         [SerializeField] float walkSeconds = 1.4f;
         [SerializeField] float secondsPerDigit = 0.28f;
         [SerializeField] float holdSeconds = 0.5f;
@@ -59,6 +60,7 @@ namespace Noted.Game
             for (int i = 0; i < code.Length && !skipRequested; i++)
             {
                 shown += code[i] + " ";
+                if (sfx != null) sfx.Play(SfxId.PullTick, 1f + i * 0.06f);
                 consoleScreen.text = "ENTER CODE\n> " + shown;
                 float d = 0f;
                 while (d < secondsPerDigit && !skipRequested)
@@ -69,6 +71,7 @@ namespace Noted.Game
             }
 
             consoleScreen.text = "ENTER CODE\n> " + CodeGenerator.Spaced(code) + "\nACCEPTED";
+            if (sfx != null) sfx.Play(SfxId.PullAccepted);
             float h = 0f;
             while (h < holdSeconds && !skipRequested)
             {
