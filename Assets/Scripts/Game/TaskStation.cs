@@ -69,6 +69,32 @@ namespace Noted.Game
             flow.ActivateStation(this);
         }
 
+        // The second list: an off-book step at this prop, done with F.
+        public override bool TryGetAlternatePrompt(out string prompt, out float holdSeconds)
+        {
+            prompt = null;
+            holdSeconds = 0f;
+            var session = flow != null ? flow.Session : null;
+            if (session == null || !flow.IsDay) return false;
+            if (!session.TryGetAlternateStep(stationId, out _, out var step)) return false;
+
+            if (step.Kind == StepKind.Hold)
+            {
+                holdSeconds = step.HoldSeconds * session.Config.TaskHoldScale * session.Mods.HoldMultiplier;
+                prompt = "Hold F: " + step.Prompt;
+            }
+            else
+            {
+                prompt = "Press F: " + step.Prompt;
+            }
+            return true;
+        }
+
+        public override void CompleteAlternate()
+        {
+            flow.ActivateAlternate(this);
+        }
+
         void Update()
         {
             bool nowActive = false;

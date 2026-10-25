@@ -13,6 +13,7 @@ namespace Noted.Game
         [SerializeField] Text timerText;
         [SerializeField] Text uptimeText;
         [SerializeField] Text rankText;
+        [SerializeField] Text metricsText;
         [SerializeField] Text tasksText;
         [SerializeField] RectTransform tasksBack;
         [SerializeField] Text promptText;
@@ -43,27 +44,29 @@ namespace Noted.Game
 
             // Status (top right)
             UiKit.Panel(r, "StatusBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -100), new Vector2(-16, -16));
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -128), new Vector2(-16, -16));
             uptimeText = UiKit.Label(r, "Uptime", "Uptime 0", 30, UiKit.Yellow, TextAnchor.UpperRight,
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -52), new Vector2(-28, -22));
             rankText = UiKit.Label(r, "Rank", "Trainee", 22, UiKit.Cream, TextAnchor.UpperRight,
                 new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -92), new Vector2(-28, -56));
+            metricsText = UiKit.Label(r, "Metrics", "", 20, UiKit.Cream, TextAnchor.UpperRight,
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -122), new Vector2(-28, -94));
 
             // Tools owned (under the status panel)
             toolsBack = UiKit.Panel(r, "ToolsBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -214), new Vector2(-16, -108)).rectTransform;
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-330, -242), new Vector2(-16, -136)).rectTransform;
             toolsText = UiKit.Label(r, "Tools", "TOOLS: none yet", 20, UiKit.Cream, TextAnchor.UpperRight,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322, -208), new Vector2(-24, -114));
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-322, -236), new Vector2(-24, -142));
 
             // Task list (top left)
             tasksBack = UiKit.Panel(r, "TasksBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.7f),
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16, -280), new Vector2(560, -16)).rectTransform;
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16, -280), new Vector2(740, -16)).rectTransform;
             tasksText = UiKit.Label(r, "Tasks", "", 24, UiKit.Cream, TextAnchor.UpperLeft,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30, -270), new Vector2(548, -26));
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(30, -270), new Vector2(728, -26));
 
             // Prompt and progress (bottom centre)
-            promptText = UiKit.Label(r, "Prompt", "", 30, UiKit.Cream, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-500, 150), new Vector2(500, 200));
+            promptText = UiKit.Label(r, "Prompt", "", 30, UiKit.Cream, TextAnchor.LowerCenter,
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-500, 150), new Vector2(500, 240));
             var barBack = UiKit.Panel(r, "ProgressBack", new Color(UiKit.Navy.r, UiKit.Navy.g, UiKit.Navy.b, 0.85f),
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-180, 124), new Vector2(180, 144));
             progressRoot = barBack.gameObject;
@@ -100,7 +103,14 @@ namespace Noted.Game
             rankText.text = rank + (string.IsNullOrEmpty(progress) ? "" : "   " + progress);
         }
 
-        public void SetTasks(IReadOnlyList<TaskInstance> tasks)
+        /// <summary>Reliability and rollout under the rank. Empty text hides them (the early levels do not show them).</summary>
+        public void SetMetrics(string text)
+        {
+            if (metricsText != null) metricsText.text = text ?? "";
+        }
+
+        /// <param name="nameOf">The wording for a job at the current stage of the reveal; null shows each job's original name.</param>
+        public void SetTasks(IReadOnlyList<TaskInstance> tasks, System.Func<TaskDefinition, string> nameOf = null)
         {
             sb.Clear();
             sb.Append("<b>TODAY'S TASKS</b>\n");
@@ -119,7 +129,7 @@ namespace Noted.Game
                             if (t.Definition.Steps.Count > 1) tail = "  (" + (t.StepIndex + 1) + "/" + t.Definition.Steps.Count + ")";
                             break;
                     }
-                    string line = mark + " " + t.Definition.Name + tail;
+                    string line = mark + " " + (nameOf != null ? nameOf(t.Definition) : t.Definition.Name) + tail;
                     if (t.IsFinished) sb.Append("<color=#9AA39F>").Append(line).Append("</color>\n");
                     else sb.Append(line).Append('\n');
                 }
@@ -154,7 +164,7 @@ namespace Noted.Game
         {
             toolsText.text = text;
             Canvas.ForceUpdateCanvases();
-            if (toolsBack != null) toolsBack.offsetMin = new Vector2(-330f, -(108f + Mathf.Clamp(toolsText.preferredHeight + 18f, 36f, 200f)));
+            if (toolsBack != null) toolsBack.offsetMin = new Vector2(-330f, -(136f + Mathf.Clamp(toolsText.preferredHeight + 18f, 36f, 200f)));
         }
 
         public void SetCarrying(string text)

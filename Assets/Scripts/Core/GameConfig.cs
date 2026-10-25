@@ -5,7 +5,8 @@ namespace Noted.Core
     /// <summary>Tuning numbers for the core loop. Everything here is a first guess to be tuned by hand.</summary>
     public sealed class GameConfig
     {
-        public float DayLengthSeconds = 60f;
+        /// <summary>Day length, list size, promotion thresholds and story stage for every level.</summary>
+        public LevelTable Levels = LevelTable.Default();
 
         /// <summary>Multiplies every task hold time. One knob for how tight the day feels.</summary>
         public float TaskHoldScale = 1f;
@@ -19,31 +20,22 @@ namespace Noted.Core
         /// <summary>How many physical coins a finished task sprays. Each is worth CoinsPerTask / this.</summary>
         public int CoinPickupsPerTask = 5;
 
-        /// <summary>Tasks on the list per rank (Trainee, Associate, Specialist).</summary>
-        public int[] TasksPerRank = { 2, 3, 5 };
-
-        /// <summary>Total tasks completed needed to reach rank 1, then rank 2.</summary>
-        public int[] RankThresholds = { 5, 12 };
-
-        public string[] RankTitles = { "Trainee", "Associate", "Specialist" };
-
         /// <summary>Walk speed bonus from the comfortable shoes given at rank 2.</summary>
         public float ShoesSpeedBonus = 0.08f;
 
         public string OrganizationName = "The Solace Initiative";
 
-        public int MaxRank => RankThresholds.Length;
+        /// <summary>Total completed tasks needed to reach each rank after the first.</summary>
+        public int[] RankThresholds => Levels.Thresholds();
 
-        public string TitleFor(int rank)
-        {
-            int i = Math.Max(0, Math.Min(rank, RankTitles.Length - 1));
-            return RankTitles[i];
-        }
+        public int MaxRank => Levels.MaxRank;
 
-        public int TasksFor(int rank)
-        {
-            int i = Math.Max(0, Math.Min(rank, TasksPerRank.Length - 1));
-            return TasksPerRank[i];
-        }
+        public string TitleFor(int rank) => Levels.For(rank).Title;
+
+        public int TasksFor(int rank) => Levels.For(rank).TaskCount;
+
+        public float DayLengthFor(int rank) => Levels.For(rank).DaySeconds;
+
+        public int RevealStageFor(int rank) => Levels.For(rank).RevealStage;
     }
 }

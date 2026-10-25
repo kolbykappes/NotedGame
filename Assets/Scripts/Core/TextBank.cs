@@ -49,16 +49,34 @@ namespace Noted.Core
             },
         };
 
+        // Once the reveal reaches harm in numbers (stage 3) the voice drops the warmth and goes short and flat.
+        static readonly string[] FlatReplies =
+        {
+            "Noted.",
+            "Noted. Recorded.",
+            "Your complaint has been recorded.",
+            "Understood. Please continue.",
+            "Noted. Reliability unchanged.",
+            "Noted. Please remain within tolerance.",
+        };
+
+        public const int FlatStage = 3;
+
         string lastReply;
 
         public static int TierFor(int rank) => Math.Max(0, Math.Min(rank, Replies.Length - 1));
 
         public static int ReplyCount(int rank) => Replies[TierFor(rank)].Length;
 
+        public static int FlatReplyCount => FlatReplies.Length;
+
         /// <summary>Picks a reply for the rank that never repeats the previous one back to back.</summary>
-        public string PickReply(int rank, Random rng)
+        public string PickReply(int rank, Random rng) => PickReply(rank, rng, 0);
+
+        /// <summary>As above, but at the flat stage of the reveal the warm replies are replaced by short flat ones.</summary>
+        public string PickReply(int rank, Random rng, int revealStage)
         {
-            var pool = Replies[TierFor(rank)];
+            var pool = revealStage >= FlatStage ? FlatReplies : Replies[TierFor(rank)];
             string choice;
             do
             {
@@ -113,6 +131,8 @@ namespace Noted.Core
 
         public static string RankUp(GameConfig config, int newRank)
         {
+            var tape = config.Levels.For(newRank).TapeText;
+            if (tape != null) return tape;
             if (newRank == 1)
             {
                 return

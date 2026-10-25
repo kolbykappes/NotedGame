@@ -49,6 +49,7 @@ namespace Noted.EditorTools
         static Font font;
         static Transform rGeometry, rProps, rStations, rLights, rSigns, rSystems, rHall, rCeiling;
         static LockerInteractable lockerInteractable;
+        static RolloutSign rolloutSign;
         static readonly List<TaskStation> stations = new List<TaskStation>();
         static readonly List<AreaDoor> doors = new List<AreaDoor>();
         static readonly List<Light> officeLights = new List<Light>();
@@ -148,6 +149,7 @@ namespace Noted.EditorTools
             Set(flow, "pull", pull);
             Set(flow, "sfx", sfx);
             Set(flow, "miniGame", miniGame);
+            Set(flow, "rolloutSign", rolloutSign);
             SetArray(flow, "doors", doors.ToArray());
             Set(flow, "wakePoint", wake);
             Set(flow, "consoleStandPoint", stand);
@@ -313,6 +315,11 @@ namespace Noted.EditorTools
             Sign(rSigns, "SignInitiative", "THE SOLACE INITIATIVE", new Vector3(-29.6f, 3.0f, 13.88f), 0f, 0.07f, 48, Cream, TextAnchor.UpperLeft);
             Sign(rSigns, "SignSlogan", "Comfort Is Our Output", new Vector3(-29.6f, 2.62f, 13.88f), 0f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
             Sign(rSigns, "SignAdminDoor", "ADMINISTRATION", new Vector3(-26.7f, 2.9f, 1.88f), 0f, 0.06f, 40, Cream, TextAnchor.UpperLeft);
+
+            // The schedule on the wall: a slogan until the reveal, then the company's rollout and your reliability. Read from inside the room.
+            var rolloutLabel = Sign(rSigns, "SignRollout", "WITHIN TOLERANCE", new Vector3(-20.7f, 2.55f, 2.12f), 180f, 0.05f, 40, Yellow, TextAnchor.UpperLeft);
+            rolloutSign = rolloutLabel.gameObject.AddComponent<RolloutSign>();
+            Set(rolloutSign, "label", rolloutLabel);
             Box(rProps, "AdminRug", new Vector3(-25f, 0.01f, 8f), new Vector3(5f, 0.02f, 3f), mNavy, false);
             var locker = Box(rProps, "ToolLocker", new Vector3(-29.5f, 1.0f, 6.4f), new Vector3(0.6f, 2.0f, 1.8f), mDoor);
             lockerInteractable = locker.AddComponent<LockerInteractable>();

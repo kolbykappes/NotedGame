@@ -1,6 +1,46 @@
 # Playtest guide
 
-*Updated 2026-10-24 (evening): the ten-job system and unlockable rooms. Nobody has played the changes below with a real mouse and speakers yet.*
+*Updated 2026-10-25: the feel-test build is at the top. Below it is the guide to the ten-job system (2026-10-24 evening), still accurate except that the levels now have their own day lengths. Nobody has played any of it with a real mouse, keyboard and speakers yet.*
+
+## Feel test (2026-10-25): start here
+**Goal:** play several days at a mid level and judge three things: (1) **pacing**, whether there is slack once the official list is done; (2) **messages**, whether the job names, procedure cards, scraps and the morning slip land; (3) **the second list**, whether the off-book errands feel like a heist inside a shift. No stealth yet.
+
+**Getting to a level**
+1. Press **Play**, click **Start** on the setup screen, then **Begin my first day**. Dismiss the how-to cards.
+2. Press **F6** once for Level 2, twice for Level 3 (**Specialist**, 5 jobs in 110 s, reveal stage 2), and so on up to Level 5 (**Steward**, stage 3). **Shift+F6** goes down. A jump restarts at that level with a basic tool loadout, 150 Uptime, every room open and the level's usual day number.
+3. Or set **Debug Start Level** on the `GameFlow` object in the Inspector (0 is a normal game). A scene rebuild resets it to 0.
+4. Each morning shows cards in order: the town's **morning slip**, a **scrap**, **updated procedures**, any new job type, then the **second list**. Space or Enter continues.
+
+**Keys (all read straight from the keyboard; no input binding was changed)**
+| Key | What it does |
+|---|---|
+| **F** | The off-book action at a station on today's second list (hold it where the prompt says "Hold F"). The prompt shows under the E prompt only when a second-list step is available there. |
+| **Tab** (hold) | Read today's second list. It is not on the HUD. |
+| **F1** | Show or hide the feel-test readout (level, clock, official list progress, reliability, rollout, errands, scraps). Its four buttons need the mouse: press **Esc** to free the cursor, then click **Wellness tape**, **Offer errand**, **Show scrap** or **Morning slip**. |
+| **F2** | Replay this day: back to the start of the day, same list, same state. |
+| **F3** | Skip to the next morning (ends the day as it stands). |
+| **F4** | Grant every tool and +500 Uptime. |
+| **F5** | End the day now (starts the pull). |
+| **F6** | Jump to the next level (Shift for the previous). |
+
+**What to try, in order**
+1. Play Level 3 for a few days. Do the official list as fast as you can, then look at the readout: how much clock was left (slack) when the list finished? Is that enough for the errand?
+2. Do the errand named on the second list (stations and steps are in the card). Check the **morning slip** next day: it should say how many households were restored. Check the wall sign in the administration room (Rollout and Reliability).
+3. Leave the official list unfinished on purpose for a day: Reliability drops 8 points per unfinished job. Below 80% a promotion is held (the quiet-time message says so).
+4. Press F2 to run the same day again with a different plan. Press F6 to Levels 4 and 5 and look at how the job names read (stage 3 puts numbers on the harm).
+5. At the end of each day the numbers go to the **day log** (`daylog.csv`; its path is at the bottom of the F1 readout). Send me that file and I will tune the table from it.
+
+**What was verified (and how)**
+- 116 Edit Mode tests pass (72 earlier, 44 new: level table, start profile, replay snapshot, reliability, rollout, reveal text, scraps, the morning slip, errands and their windows).
+- In Play Mode with the Editor in the background and simulated input: Level 1 plays as it did; F6 jumps to Levels 3 and 5 with every morning card read; a two-station errand (breakers) and a held-F errand (the vent) through the real interactor, including the two-line E and F prompt; the day summary, the CSV row, the next morning's slip; replay and skip; the overlay text; HUD and wall-sign captures. No console errors; `ProjectSettings` untouched.
+
+**What I could NOT verify (please check)**
+1. The **real keyboard** for F, Tab and F1 to F6 (simulated keys are dropped while the Editor is in the background, so the same code was driven through its test hooks).
+2. The **overlay buttons** with a real mouse.
+3. Whether **any of it is fun**, whether the errands fit the slack, and whether the job names and scraps land. All the numbers are first guesses: the day lengths (60, 80, 110, 130, 150 s), list sizes (2, 3, 5, 6, 6), the 8-point Reliability penalty, par of 1.06 a day, and each errand's effect.
+4. Sound (nothing new was added) and text legibility of the small wall sign at your resolution.
+
+**Known rough edges:** no stealth, so nothing can catch you yet; the wellness tape only appears from the overlay; there is no save, so replay and F6 are the only ways to resume; the second-list prompt is the only cue that an errand step is available (no marker beams).
 
 ## How to play it
 1. Open `Assets/Scenes/Facility.unity` (it should already be open) and press **Play**. Click into the Game view if the cursor is not locked.

@@ -18,6 +18,12 @@ namespace Noted.Core
             Balance -= amount;
             return true;
         }
+
+        /// <summary>Sets the balance outright (debug starts and replaying a day).</summary>
+        public void Set(int balance)
+        {
+            Balance = Math.Max(0, balance);
+        }
     }
 
     /// <summary>Rank is earned by completing tasks. Levelling up consumes no coins.</summary>
@@ -33,19 +39,51 @@ namespace Noted.Core
             thresholds = rankThresholds;
         }
 
-        /// <summary>Adds completed tasks. Returns true when the rank went up as a result.</summary>
-        public bool Record(int completed)
+        /// <summary>The rank the completed-task count has earned, ignoring any hold on promotion.</summary>
+        public int EarnedRank
         {
-            if (completed <= 0) return false;
-            CompletedTasks += completed;
-            int newRank = 0;
-            for (int i = 0; i < thresholds.Length; i++)
+            get
             {
-                if (CompletedTasks >= thresholds[i]) newRank = i + 1;
+                int earned = 0;
+                for (int i = 0; i < thresholds.Length; i++)
+                {
+                    if (CompletedTasks >= thresholds[i]) earned = i + 1;
+                }
+                return earned;
             }
+        }
+
+        /// <summary>True when enough tasks are done for the next rank but the promotion is being held back.</summary>
+        public bool PromotionWaiting => EarnedRank > Rank;
+
+        /// <summary>
+        /// Adds completed tasks. Returns true when the rank went up as a result. With <paramref name="canPromote"/> false the tasks
+        /// still count but the rank stays where it is until a later call allows it.
+        /// </summary>
+        public bool Record(int completed, bool canPromote = true)
+        {
+            if (completed > 0) CompletedTasks += completed;
+            int newRank = EarnedRank;
+            if (!canPromote && newRank > Rank) newRank = Rank;
             bool up = newRank > Rank;
             Rank = newRank;
             return up;
+        }
+
+        /// <summary>Puts the tracker back to a saved state (replaying a day).</summary>
+        public void Restore(int completedTasks, int rank)
+        {
+            CompletedTasks = Math.Max(0, completedTasks);
+            Rank = Math.Max(0, Math.Min(rank, thresholds.Length));
+        }
+
+        /// <summary>Jumps straight to a rank (debug starts). The completed-task count is raised to that rank's threshold if it is lower.</summary>
+        public void SetRank(int rank)
+        {
+            rank = Math.Max(0, Math.Min(rank, thresholds.Length));
+            Rank = rank;
+            int needed = rank > 0 ? thresholds[rank - 1] : 0;
+            if (CompletedTasks < needed) CompletedTasks = needed;
         }
 
         /// <summary>Total completed tasks needed for the next rank, or -1 at the top.</summary>
@@ -210,6 +248,38 @@ namespace Noted.Core
         public int Level(string id) => levels.TryGetValue(id, out int l) ? l : 0;
 
         public bool IsMaxed(UpgradeDefinition def) => Level(def.Id) >= def.MaxLevel;
+
+        public void SetLevel(string id, int level)
+        {
+            if (level <= 0) levels.Remove(id);
+            else levels[id] = level;
+        }
+
+        /// <summary>A copy of every owned level (used to replay a day).</summary>
+        public Dictionary<string, int> Snapshot() => new Dictionary<string, int>(levels);
+
+        public void Restore(IDictionary<string, int> snapshot)
+        {
+            levels.Clear();
+            foreach (var pair in snapshot) levels[pair.Key] = pair.Value;
+        }
+
+        static readonly string[] BasicLoadout =
+        {
+            "hand_cart", "faster_hands", "running_shoes", "morning_briefing", "staff_keycard", "anti_static_strap",
+        };
+
+        /// <summary>Hands out tools for a debug start. Service contracts are never granted (they would do the jobs for the player).</summary>
+        public void Grant(ToolLoadout loadout, int rank)
+        {
+            if (loadout == ToolLoadout.None) return;
+            foreach (var def in catalog.All)
+            {
+                if (!def.Available || rank < def.MinRank || def.Kind == UpgradeKind.Automation) continue;
+                if (loadout == ToolLoadout.All) SetLevel(def.Id, def.MaxLevel);
+                else if (Array.IndexOf(BasicLoadout, def.Id) >= 0) SetLevel(def.Id, 1);
+            }
+        }
 
         /// <summary>Whether the tool can be bought at this rank. Tools for jobs not yet in the game never can.</summary>
         public bool IsUnlocked(UpgradeDefinition def, int rank) => def.Available && rank >= def.MinRank;

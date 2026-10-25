@@ -11,6 +11,18 @@ One line per item: status, item, notes.
 - [ ] Decide whether Trainee days are tight enough (ideal route: 34 to 41 s sprinting, 52 to 62 s walking, out of 60; knobs: step hold times, `BaseCarryCapacity`, the building layout).
 - [ ] Tune the guessed numbers: hold times, upgrade costs, rank thresholds, pull timings, lighting fade, sound volumes, FOV, sensitivity.
 
+## Feel test (2026-10-25; requirements and acceptance in `Docs/feel-test-plan.md`)
+Goal: start at a chosen level and play several days to judge pacing, messages and the second list. **Slices 0 to 4 built 2026-10-25** (116 Edit Mode tests pass; checked in Play Mode with simulated input). Keys approved by the owner 2026-10-25: F, Tab, F1 to F6 (read through `Keyboard.current`, no binding change).
+- [x] **Slice 0, jump harness:** start profile, F6 level jump, F2 replay day, F3 skip day, F4 tools, F5 end day, F1 overlay, per-day CSV log (R0.1 to R0.6). Changed from the plan: F6 is the level jump (no PageUp/PageDown); the message preview moved to overlay buttons.
+- [x] **Slice 1, level table:** five levels, table-backed day length, task count, thresholds, reveal stage, rank-up text (R1.1 to R1.5). Specialist is 5 jobs in 110 s (the plan had 4 in 90 s) to match the measured walking pace.
+- [x] **Slice 3, reveal and messages:** stage-based job text, "updated procedures" card, 12 scraps, morning slip, flat reply tier, 10 more oddities, wellness tape text (R3.1 to R3.8). Wellness is previewable from the overlay; its trigger waits for slice 5.
+- [x] **Slice 2, Reliability and Rollout:** promotion gate at 80%, rollout par, floor and cap, HUD line, wall sign (R2.1 to R2.4).
+- [x] **Slice 4, the second list (no stealth):** five errands on existing stations, F to act, Tab to read, scrap card at day start (R4.1 to R4.8).
+- [ ] **Needs a human:** play it. Real F, Tab and F1 to F6 keys; the overlay buttons with the real mouse (press Esc to free the cursor); whether the errands fit the slack at Levels 3 to 5; whether the job names and scraps land; the day log numbers (`daylog.csv`, path in the overlay).
+- [ ] Tune from the day log: day lengths and list sizes per level, Reliability penalty (8 per unfinished task), errand effects, par (1.06 a day).
+- [ ] Known rough edges: the wall sign is small; no sound for the second list; no save, so replay and level jump are the only ways to resume; a level jump restarts with the basic tool loadout and 150 Uptime.
+- [ ] **Deferred, slice 5:** stealth (camera eyes, restricted zones, audits, Attention, pull exfil, Wellness Moment trigger) and hacking via reused mini-games. See the plan's "Not in this plan".
+
 ## Next slices
 - [ ] The hall door's purple slit overlaps its text (cosmetic; move the slit or the text).
 - [ ] A real cut-out for rooms that stay locked (a pass-through sign or a closer-look text when the player presses E on a closed door).

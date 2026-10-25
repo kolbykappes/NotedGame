@@ -69,6 +69,17 @@ namespace Noted.Core
             new Oddity("spares_cabinet", 2, "The failed drive's label has been written over by hand."),
             new Oddity("alarm_panel", 2, "The panel logged a door opening at 02:58. Nothing is on the camera."),
             new Oddity("rack_drive", 2, "The rack is warm to the touch. It is meant to be powered down."),
+            // From the reveal on (Specialist and up): the building's records start to agree with the notes.
+            new Oddity("reader_power", 2, "The badge log lists 40 approvals under your badge overnight. You were asleep."),
+            new Oddity("clipboard", 2, "Tomorrow's temperature is already written in the next row."),
+            new Oddity("mail_table", 2, "The top envelope is addressed to this building. The return address is a street."),
+            new Oddity("shredder", 2, "The bag is heavy. Some of the paper is handwritten."),
+            new Oddity("thermostat", 2, "The display shows a date next month."),
+            new Oddity("printer", 3, "The tray holds a notice addressed to A. Lindqvist, Zone 4. It is stamped DENIED."),
+            new Oddity("breaker_admin", 3, "A grid map is taped inside the panel door. Grid 14 is circled."),
+            new Oddity("coffee_machine", 3, "The label on the sack has been peeled off and replaced. It reads: CORPUS."),
+            new Oddity("vent", 3, "The air is warm. It smells of toner."),
+            new Oddity("rack_drive", 3, "The rack hums at the pitch of the complaint terminal."),
         };
 
         /// <summary>
