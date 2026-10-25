@@ -27,7 +27,7 @@ so re-check with `unity command --query <term> --detail full` before trusting a 
 
 ## Procedure 1 - Preflight (every session, before any write)
 Run `unity-ops.sh preflight`. Must show `ready`, not compiling, `playMode=stopped`. Anything else: stop and fix/ask.
-If it is playing or paused and you did not start it, it is the user's session (rule 25): stay read-only and ask. Never kill the Editor or delete a lock file to get a command through. If connection fails: check Safe Mode (compile errors) with `unity pipeline list`; window focus (rule 2); modal dialog (ask the user - you cannot see the screen).
+If it is playing or paused and you did not start it, you may stop it (rule 25, standing permission): `unity command editor_stop`, say so in one line, carry on. Never kill the Editor or delete a lock file to get a command through. If connection fails: check Safe Mode (compile errors) with `unity pipeline list`; window focus (rule 2); modal dialog (ask the user - you cannot see the screen).
 
 ## Procedure 2 - Verify loop (rule 1)
 For any write: (a) sample `console_status` cursor, (b) act, (c) read evidence from a *different* channel than the write's own success return - the file on disk (`git diff`), the engine API (`eval`), or console entries after the cursor. "Success: true" is not evidence.

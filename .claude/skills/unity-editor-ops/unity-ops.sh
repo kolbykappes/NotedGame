@@ -99,7 +99,7 @@ case "${1:-}" in
 
   play-begin) # rules 3a, 25, 35, 38: enter Play Mode so frames advance even with the Editor in the background, and prove it
     preflight
-    [ "$PLAY" = stopped ] || { echo "[unity-ops] REFUSED: Play Mode is $PLAY - a session you did not start belongs to the user (rule 25)"; exit 2; }
+    [ "$PLAY" = stopped ] || { echo "[unity-ops] REFUSED: Play Mode is $PLAY - stop it first (rule 25 lets you): unity command editor_stop --project-path <proj>, then run play-begin again"; exit 2; }
     [ -z "$DIRTY" ] || { echo "[unity-ops] REFUSED: dirty scenes ($DIRTY) - run: unity-ops.sh save"; exit 2; }
     [ ! -f "$STATE" ] || { echo "[unity-ops] REFUSED: a play-begin is already recorded ($STATE) - run play-end first"; exit 2; }
     orig=$(need 'j.result' "$(U eval --code 'return UnityEngine.Application.runInBackground.ToString();')") || exit 3
@@ -113,7 +113,7 @@ case "${1:-}" in
     echo "[unity-ops] play-begin OK: frames advancing (runInBackground was $orig; play-end restores it)" ;;
 
   play-end) # rule 38: restore every override, stop the session this script started, and check settings did not change
-    [ -f "$STATE" ] || { echo "[unity-ops] REFUSED: no play-begin recorded - this is not a session you started (rule 25)"; exit 2; }
+    [ -f "$STATE" ] || { echo "[unity-ops] REFUSED: no play-begin recorded - play-begin did not start this session, so play-end will not touch its settings; to just stop it use: unity command editor_stop (rule 25)"; exit 2; }
     orig=$(tr -d '\r\n' < "$STATE"); case "$orig" in True|False) ;; *) orig=False ;; esac
     low=$(printf '%s' "$orig" | tr 'A-Z' 'a-z')
     U eval --code "UnityEngine.Time.timeScale = 1f; UnityEngine.Application.runInBackground = $low; return \"ok\";" >/dev/null || { echo "[unity-ops] could not restore runInBackground; state file kept ($STATE)"; exit 3; }

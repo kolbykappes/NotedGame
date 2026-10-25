@@ -70,7 +70,7 @@ Traps that must hold every session (full list and reasons in rules.md and `.clau
   both on (rule 3a). Prove frames advance with `wait_for` on `Time.frameCount` (rule 35); look with `capture_game_view` (rule 36);
   simulated keyboard and mouse input is dropped in the background (rule 37); restore every override before stopping (rule 38).
   Never use `isPaused` or `editor_focus` unasked.
-- A Play or paused session you did not start is the user's: stay read-only (rule 25). Never kill the Editor or delete a lock file.
+- You may stop any Play or paused session without asking (rule 25), then carry on; do not wait for it to end. Never kill the Editor or delete a lock file.
 - Nothing written in Play Mode persists except assets (rule 4). Stop Play Mode, save dirty scenes, write through the Editor API,
   verify the file on disk (rules 4 to 6). Never hand-edit open `.unity`/`.prefab`/`.asset` files.
 - Never `unity test` with the Editor open (rule 8); use `unity command run_tests`. Zero tests run is not a pass (rules 19, 24).

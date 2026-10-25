@@ -140,10 +140,13 @@ ask what it would look like if it were lying, and pay the one extra call that te
 ## 7. Additions (2026-10-24, merged from a generic Unity ruleset)
 
 Editor ownership and safety
-25. **A Play or paused session you did not start belongs to the user.** Keep inspection read-only until authorised. Do not stop,
-    restart, pause, step, recompile, switch scenes or alter settings in it without approval. Start your own verification session
-    only from a stopped Editor. Stop only sessions you started, and restore any temporary override when finished.
-    Never kill an Editor, delete a lock file, or close the project just to make a command succeed.
+25. **You may always stop a Play or paused session, including one you did not start** (owner's standing permission, 2026-10-24).
+    Do not ask first and do not wait for it to end: a session left open blocks compiling, tests, scene rebuilds and your own
+    verification, and Play Mode state is throwaway anyway. Inspect read-only while it runs if that is useful, then stop it with
+    `unity command editor_stop` (or `editor_play` toggled off) before any step that needs a stopped Editor, say in one line that
+    you stopped it, and carry on. Restore any temporary override you set (rule 38). Still never kill an Editor process, delete a
+    lock file, or close the project just to make a command succeed; those stay forbidden. If the owner has said not to touch their
+    session in this conversation, that instruction wins.
 26. A timed-out mutation may already have executed: inspect state before retrying, and never blindly retry commands that create,
     delete or modify objects. Do not discard or silently save unrelated dirty scenes, prefab stages or assets. Track temporary
     settings you change and restore them.
