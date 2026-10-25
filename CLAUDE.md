@@ -6,7 +6,7 @@
   `.claude/rules/unity-csharp.md` (loads when you touch C#) and the `unity-editor-ops` skill (invoke it before any Editor write,
   recompile, test run or scripted scene/asset/prefab change). Kit layout and reuse: `.claude/unity-kit/README.md`.
 - **Everything specific to Noted** is in `.claude/project/`, imported below.
-- The design and research live outside this project, in `C:\Code\ClickOne` (start with `Docs/concept/hold-the-line.md`, the concept doc; the file name is the old working title).
+- The design and research live in the `ClickOne/` folder of this repository (start with `ClickOne/Docs/concept/sabotage-spine.md`, the current story and loop plan, then `ClickOne/Docs/concept/hold-the-line.md`, the earlier concept doc; its file name is the old working title).
 
 @.claude/project/profile.md
 @.claude/project/workflow.md

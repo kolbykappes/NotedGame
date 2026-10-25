@@ -21,4 +21,4 @@ The kit's "definition of done" includes the project's documentation duties. They
 
 ## Other documentation duties
 
-- When the design changes, update `C:\Code\ClickOne\Docs\concept\hold-the-line.md` in the same session.
+- When the design changes, update `ClickOne/Docs/concept/sabotage-spine.md` (and `hold-the-line.md` if the earlier concept is affected) in the same session.
