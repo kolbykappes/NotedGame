@@ -306,7 +306,7 @@ namespace Noted.EditorTools
             Box(rProps, "TerminalDesk", new Vector3(-20.6f, 0.45f, 7f), new Vector3(0.7f, 0.9f, 1.5f), mBeige);
             var monitor = Box(rProps, "TerminalMonitor", new Vector3(-20.62f, 1.25f, 7f), new Vector3(0.14f, 0.75f, 1.0f), mNavy);
             Box(monitor.transform, "TerminalScreen", new Vector3(-20.7f, 1.25f, 7f), new Vector3(0.02f, 0.62f, 0.86f), mScreen, false);
-            Sign(rProps, "TerminalText", "FEEDBACK\nPLEASE TELL US\nWHAT IS BOTHERING YOU", new Vector3(-20.715f, 1.45f, 7.38f), 90f, 0.04f, 32, Cream, TextAnchor.UpperLeft);
+            Sign(rProps, "TerminalText", "FEEDBACK\nPLEASE TELL US\nWHAT IS BOTHERING YOU", new Vector3(-20.715f, 1.38f, 7.35f), 90f, 0.019f, 32, Navy, TextAnchor.UpperLeft);
             terminal = monitor.AddComponent<TerminalInteractable>();
 
             // Signs and decor.
